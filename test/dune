@@ -55,3 +55,8 @@
  (name test_integration)
  (modules test_integration)
  (libraries flo alcotest eio_main))
+
+(test
+ (name test_flo_format_json)
+ (modules test_flo_format_json)
+ (libraries flo alcotest))
