@@ -60,3 +60,8 @@
  (name test_flo_format_json)
  (modules test_flo_format_json)
  (libraries flo alcotest))
+
+(test
+ (name test_flo_format_logfmt)
+ (modules test_flo_format_logfmt)
+ (libraries flo alcotest))

@@ -152,4 +152,5 @@ module Flo_core = Flo_core
 module Flo_context = Flo_context
 module Flo_format_pretty = Flo_format_pretty
 module Flo_format_json = Flo_format_json
+module Flo_format_logfmt = Flo_format_logfmt
 module Flo_sink_console = Flo_sink_console

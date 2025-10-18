@@ -558,7 +558,7 @@ Flo.catch (fun () ->
 
 ### Phase 2: Structured Logging (8 tasks, ~1200 LOC)
 - [x] Task 2.1: Implement `Flo_format_json` formatter
-- [ ] Task 2.2: Implement `Flo_format_logfmt` formatter
+- [x] Task 2.2: Implement `Flo_format_logfmt` formatter
 - [ ] Task 2.3: Implement `Flo_structured` GADT-based type-safe keys
 - [ ] Task 2.4: Implement `Flo_structured` span management
 - [ ] Task 2.5: Implement `Flo_semconv` semantic conventions
