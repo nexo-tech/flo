@@ -36,10 +36,10 @@
  (modules test_flo_context)
  (libraries flo alcotest eio_main))
 
-; (test
-;  (name test_flo_format_pretty)
-;  (modules test_flo_format_pretty)
-;  (libraries flo alcotest))
+(test
+ (name test_flo_format_pretty)
+ (modules test_flo_format_pretty)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_flo_sink_console)
