@@ -5,3 +5,8 @@
  (name simple_app)
  (modules simple_app)
  (libraries flo eio_main))
+
+(executable
+ (name structured_events)
+ (modules structured_events)
+ (libraries flo unix))

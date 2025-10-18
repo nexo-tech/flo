@@ -65,3 +65,8 @@
  (name test_flo_format_logfmt)
  (modules test_flo_format_logfmt)
  (libraries flo alcotest))
+
+(test
+ (name test_flo_structured)
+ (modules test_flo_structured)
+ (libraries flo alcotest eio_main))

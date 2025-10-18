@@ -1,4 +1,5 @@
 (library
  (name flo)
  (public_name flo)
+ (wrapped false)
  (libraries eio eio.core yojson ptime ptime.clock.os unix))
