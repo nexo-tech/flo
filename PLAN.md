@@ -12,7 +12,7 @@
 - [x] Task 1.7: Implement `Flo_context` for fiber-local storage with Eio (Est: 200 LOC)
 - [x] Task 1.8: Implement `Flo_format_pretty` for console output (Est: 300 LOC)
 - [x] Task 1.9: Implement `Flo_sink_console` for console logging (Est: 150 LOC)
-- [ ] Task 1.10: Implement `Flo` simple API layer with global logger (Est: 300 LOC)
+- [x] Task 1.10: Implement `Flo` simple API layer with global logger (Est: 300 LOC)
 - [ ] Task 1.11: Create `examples/simple_app.ml` demonstrating basic usage (Est: 50 LOC)
 - [ ] Task 1.12: Write unit tests for Severity, Location, Value modules (Est: 200 LOC)
 - [ ] Task 1.13: Write unit tests for Trace_context and Record modules (Est: 200 LOC)

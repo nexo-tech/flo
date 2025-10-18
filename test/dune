@@ -46,10 +46,10 @@
  (modules test_flo_sink_console)
  (libraries flo alcotest eio_main))
 
-; (test
-;  (name test_flo)
-;  (modules test_flo)
-;  (libraries flo alcotest eio_main))
+(test
+ (name test_flo)
+ (modules test_flo)
+ (libraries flo alcotest eio_main))
 
 ; (test
 ;  (name test_integration)
