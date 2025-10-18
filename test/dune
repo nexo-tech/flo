@@ -1,10 +1,10 @@
 ; Tests will be added as modules are implemented
 ; Uncomment each test as the corresponding module is completed
 
-; (test
-;  (name test_severity)
-;  (modules test_severity)
-;  (libraries flo alcotest))
+(test
+ (name test_severity)
+ (modules test_severity)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_location)

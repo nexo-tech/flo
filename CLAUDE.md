@@ -5,7 +5,8 @@
 2. every code snippet in the documentation `docs` must correspond to working
    code example in `examples`
 3. for new implemented feature it must have tests
-4. no warnings and 100% passing tests
+4. no warnings and 100% passing tests. and of course the library and tests must
+   fully compile!
 5. update master checklist in .md file - [x] and then commit the file
 
 # flo
