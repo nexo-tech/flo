@@ -53,14 +53,14 @@
 
 ```ocaml
 (** severity.mli - Log levels following OpenTelemetry conventions *)
-type t = 
-  | Trace    (* 5  - Fine-grained debugging *)
-  | Debug    (* 10 - Debug information *)
-  | Info     (* 20 - Informational events *)
-  | Success  (* 22 - Successful operations (Loguru-inspired) *)
-  | Warn     (* 30 - Warning conditions *)
-  | Error    (* 40 - Error events *)
-  | Fatal    (* 50 - Critical failures *)
+type t =
+  | Trace    (* 1  - Fine-grained debugging (TRACE) *)
+  | Debug    (* 5  - Debug information (DEBUG) *)
+  | Info     (* 9  - Informational events (INFO) *)
+  | Success  (* 10 - Successful operations (INFO2, Loguru-inspired) *)
+  | Warn     (* 13 - Warning conditions (WARN) *)
+  | Error    (* 17 - Error events (ERROR) *)
+  | Fatal    (* 21 - Critical failures (FATAL) *)
 
 val to_string : t -> string
 val to_number : t -> int  (* OpenTelemetry severity number *)
