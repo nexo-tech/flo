@@ -581,13 +581,13 @@ Flo.catch (fun () ->
 - [x] Task 4.4: Create `examples/perf_app.ml`
 - [x] Task 4.5: Update checklist and commit Phase 4
 
-### Phase 5: Distributed Tracing Integration (6 tasks, ~700 LOC)
-- [ ] Task 5.1: Implement `Flo_eio` HTTP context extraction
-- [ ] Task 5.2: Implement trace context injection
-- [ ] Task 5.3: Implement with_http_context wrapper
-- [ ] Task 5.4: Enhance span management with parent links
-- [ ] Task 5.5: Create `examples/web_service.ml`
-- [ ] Task 5.6: Update checklist and commit Phase 5
+### Phase 5: Distributed Tracing Integration (6 tasks, ~700 LOC) - ✅ COMPLETE
+- [x] Task 5.1: Implement `Flo_eio` HTTP context extraction
+- [x] Task 5.2: Implement trace context injection
+- [x] Task 5.3: Implement with_http_context wrapper
+- [x] Task 5.4: Enhance span management with parent links
+- [x] Task 5.5: Create `examples/web_service.ml`
+- [x] Task 5.6: Update checklist and commit Phase 5
 
 ### Phase 6: Polish & Documentation (7 tasks, ~600 LOC)
 - [ ] Task 6.1: Implement PPX for automatic location capture

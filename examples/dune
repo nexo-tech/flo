@@ -20,3 +20,8 @@
  (name perf_app)
  (modules perf_app)
  (libraries flo eio_main unix))
+
+(executable
+ (name web_service)
+ (modules web_service)
+ (libraries flo eio_main unix))

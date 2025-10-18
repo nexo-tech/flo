@@ -85,3 +85,8 @@
  (name test_flo_sink_async)
  (modules test_flo_sink_async)
  (libraries flo alcotest eio_main unix))
+
+(test
+ (name test_flo_eio)
+ (modules test_flo_eio)
+ (libraries flo alcotest eio_main unix))
