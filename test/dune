@@ -21,10 +21,10 @@
  (modules test_trace_context)
  (libraries flo alcotest))
 
-; (test
-;  (name test_record)
-;  (modules test_record)
-;  (libraries flo alcotest))
+(test
+ (name test_record)
+ (modules test_record)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_flo_core)

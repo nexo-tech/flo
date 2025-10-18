@@ -1,4 +1,4 @@
 (library
  (name flo)
  (public_name flo)
- (libraries eio eio.core yojson ptime))
+ (libraries eio eio.core yojson ptime ptime.clock.os unix))
