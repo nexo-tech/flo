@@ -5,7 +5,7 @@
 ### Core Foundation
 - [x] Task 1.1: Implement `Severity` module with OpenTelemetry compliance (Est: 50 LOC)
 - [x] Task 1.2: Implement `Location` module for source location tracking (Est: 80 LOC)
-- [ ] Task 1.3: Implement `Value` module for type-safe structured values (Est: 150 LOC)
+- [x] Task 1.3: Implement `Value` module for type-safe structured values (Est: 150 LOC)
 - [ ] Task 1.4: Implement `Trace_context` module with W3C Trace Context (Est: 200 LOC)
 - [ ] Task 1.5: Implement `Record` module for log records (Est: 100 LOC)
 - [ ] Task 1.6: Implement `Flo_core` contravariant logger primitives (Est: 250 LOC)

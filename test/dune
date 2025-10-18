@@ -11,10 +11,10 @@
  (modules test_location)
  (libraries flo alcotest))
 
-; (test
-;  (name test_value)
-;  (modules test_value)
-;  (libraries flo alcotest))
+(test
+ (name test_value)
+ (modules test_value)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_trace_context)
