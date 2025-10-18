@@ -556,7 +556,7 @@ Flo.catch (fun () ->
 
 ## Future Phases (Outline)
 
-### Phase 2: Structured Logging (8 tasks, ~1200 LOC)
+### Phase 2: Structured Logging (8 tasks, ~1200 LOC) - ✅ COMPLETE
 - [x] Task 2.1: Implement `Flo_format_json` formatter
 - [x] Task 2.2: Implement `Flo_format_logfmt` formatter
 - [x] Task 2.3: Implement `Flo_structured` GADT-based type-safe keys
@@ -564,7 +564,7 @@ Flo.catch (fun () ->
 - [x] Task 2.5: Implement `Flo_semconv` semantic conventions
 - [x] Task 2.6: Create `examples/structured_events.ml`
 - [x] Task 2.7: Write tests for formatters
-- [ ] Task 2.8: Update checklist and commit Phase 2
+- [x] Task 2.8: Update checklist and commit Phase 2
 
 ### Phase 3: File Sinks & Rotation (6 tasks, ~900 LOC)
 - [ ] Task 3.1: Implement `Flo_sink_file` basic file sink
