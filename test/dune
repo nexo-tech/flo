@@ -16,10 +16,10 @@
  (modules test_value)
  (libraries flo alcotest))
 
-; (test
-;  (name test_trace_context)
-;  (modules test_trace_context)
-;  (libraries flo alcotest))
+(test
+ (name test_trace_context)
+ (modules test_trace_context)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_record)
