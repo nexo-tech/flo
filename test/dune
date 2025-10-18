@@ -6,10 +6,10 @@
  (modules test_severity)
  (libraries flo alcotest))
 
-; (test
-;  (name test_location)
-;  (modules test_location)
-;  (libraries flo alcotest))
+(test
+ (name test_location)
+ (modules test_location)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_value)
