@@ -70,3 +70,8 @@
  (name test_flo_structured)
  (modules test_flo_structured)
  (libraries flo alcotest eio_main))
+
+(test
+ (name test_flo_semconv)
+ (modules test_flo_semconv)
+ (libraries flo alcotest))

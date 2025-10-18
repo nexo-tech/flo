@@ -182,6 +182,113 @@ let demonstrate_spans () =
   | Ok () -> Flo.success "Order processing completed"
   | Error msg -> Flo.errorf "Order processing failed: %s" msg
 
+(* Demonstrate semantic conventions *)
+
+let simulate_http_request () =
+  (* Log HTTP request with OpenTelemetry semantic conventions *)
+  Flo.info_fields "Incoming HTTP request" ~fields:[
+    Flo_semconv.http_method "POST";
+    Flo_semconv.http_target "/api/orders";
+    Flo_semconv.http_scheme "https";
+    Flo_semconv.http_host "api.example.com";
+    Flo_semconv.http_user_agent "Mozilla/5.0";
+    Flo_semconv.request_id "req-abc-123";
+  ];
+
+  (* Simulate processing *)
+  Unix.sleepf 0.02;
+
+  (* Log response *)
+  Flo.info_fields "HTTP response" ~fields:[
+    Flo_semconv.http_status_code 201;
+    Flo_semconv.http_response_body_size 156;
+    Flo_semconv.duration_ms 20.5;
+  ]
+
+let simulate_database_query () =
+  (* Log database operation with semantic conventions *)
+  Flo.info_fields "Database query" ~fields:[
+    Flo_semconv.db_system "postgresql";
+    Flo_semconv.db_name "orders_db";
+    Flo_semconv.db_operation "SELECT";
+    Flo_semconv.db_statement "SELECT * FROM orders WHERE user_id = $1";
+    Flo_semconv.db_user "app_user";
+    Flo_semconv.db_sql_table "orders";
+  ];
+
+  Unix.sleepf 0.015;
+
+  Flo.info_fields "Query completed" ~fields:[
+    Flo_semconv.duration_ms 15.2;
+  ]
+
+let simulate_messaging () =
+  (* Log message queue operation *)
+  Flo.info_fields "Publishing message" ~fields:[
+    Flo_semconv.messaging_system "kafka";
+    Flo_semconv.messaging_destination "order-events";
+    Flo_semconv.messaging_destination_kind "topic";
+    Flo_semconv.messaging_message_id "msg-12345";
+    Flo_semconv.messaging_protocol "kafka";
+    Flo_semconv.messaging_message_payload_size 512;
+  ]
+
+let simulate_error () =
+  (* Log error with semantic conventions *)
+  try
+    raise (Invalid_argument "Validation failed: amount must be positive")
+  with exn ->
+    Flo.info_fields "Error occurred" ~fields:[
+      Flo_semconv.error_type (Printexc.to_string exn);
+      Flo_semconv.error_message (Printexc.to_string exn);
+      Flo_semconv.error_stack_trace (Printexc.get_backtrace ());
+    ]
+
+let demonstrate_semantic_conventions () =
+  Flo.info "=== OpenTelemetry Semantic Conventions ===";
+
+  (* Service metadata *)
+  Flo.info_fields "Service info" ~fields:[
+    Flo_semconv.service_name "order-service";
+    Flo_semconv.service_version "1.2.3";
+    Flo_semconv.deployment_environment "production";
+  ];
+
+  Flo.info "";
+
+  (* HTTP operations *)
+  Flo.info "Simulating HTTP request...";
+  simulate_http_request ();
+
+  Flo.info "";
+
+  (* Database operations *)
+  Flo.info "Simulating database query...";
+  simulate_database_query ();
+
+  Flo.info "";
+
+  (* Messaging *)
+  Flo.info "Simulating message queue...";
+  simulate_messaging ();
+
+  Flo.info "";
+
+  (* Error handling *)
+  Flo.info "Simulating error...";
+  simulate_error ();
+
+  Flo.info "";
+
+  (* Cloud and host attributes *)
+  Flo.info_fields "Deployment context" ~fields:[
+    Flo_semconv.cloud_provider "aws";
+    Flo_semconv.cloud_region "us-east-1";
+    Flo_semconv.host_name "web-server-01";
+    Flo_semconv.host_type "t3.medium";
+    Flo_semconv.process_pid (Unix.getpid ());
+  ]
+
 (* Main example *)
 
 let main () =
@@ -205,6 +312,11 @@ let main () =
 
   (* Demonstrate span management *)
   demonstrate_spans ();
+
+  Flo.info "";
+
+  (* Demonstrate semantic conventions *)
+  demonstrate_semantic_conventions ();
 
   Flo.info "";
   Flo.success "Example completed!"

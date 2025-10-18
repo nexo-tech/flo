@@ -561,7 +561,7 @@ Flo.catch (fun () ->
 - [x] Task 2.2: Implement `Flo_format_logfmt` formatter
 - [x] Task 2.3: Implement `Flo_structured` GADT-based type-safe keys
 - [x] Task 2.4: Implement `Flo_structured` span management
-- [ ] Task 2.5: Implement `Flo_semconv` semantic conventions
+- [x] Task 2.5: Implement `Flo_semconv` semantic conventions
 - [x] Task 2.6: Create `examples/structured_events.ml`
 - [ ] Task 2.7: Write tests for formatters
 - [ ] Task 2.8: Update checklist and commit Phase 2
