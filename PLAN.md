@@ -8,7 +8,7 @@
 - [x] Task 1.3: Implement `Value` module for type-safe structured values (Est: 150 LOC)
 - [x] Task 1.4: Implement `Trace_context` module with W3C Trace Context (Est: 200 LOC)
 - [x] Task 1.5: Implement `Record` module for log records (Est: 100 LOC)
-- [ ] Task 1.6: Implement `Flo_core` contravariant logger primitives (Est: 250 LOC)
+- [x] Task 1.6: Implement `Flo_core` contravariant logger primitives (Est: 250 LOC)
 - [ ] Task 1.7: Implement `Flo_context` for fiber-local storage with Eio (Est: 200 LOC)
 - [ ] Task 1.8: Implement `Flo_format_pretty` for console output (Est: 300 LOC)
 - [ ] Task 1.9: Implement `Flo_sink_console` for console logging (Est: 150 LOC)

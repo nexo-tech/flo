@@ -26,10 +26,10 @@
  (modules test_record)
  (libraries flo alcotest))
 
-; (test
-;  (name test_flo_core)
-;  (modules test_flo_core)
-;  (libraries flo alcotest))
+(test
+ (name test_flo_core)
+ (modules test_flo_core)
+ (libraries flo alcotest))
 
 ; (test
 ;  (name test_flo_context)
