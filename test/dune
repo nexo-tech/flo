@@ -1,0 +1,57 @@
+; Tests will be added as modules are implemented
+; Uncomment each test as the corresponding module is completed
+
+; (test
+;  (name test_severity)
+;  (modules test_severity)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_location)
+;  (modules test_location)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_value)
+;  (modules test_value)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_trace_context)
+;  (modules test_trace_context)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_record)
+;  (modules test_record)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_flo_core)
+;  (modules test_flo_core)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_flo_context)
+;  (modules test_flo_context)
+;  (libraries flo alcotest eio_main))
+
+; (test
+;  (name test_flo_format_pretty)
+;  (modules test_flo_format_pretty)
+;  (libraries flo alcotest))
+
+; (test
+;  (name test_flo_sink_console)
+;  (modules test_flo_sink_console)
+;  (libraries flo alcotest eio_main))
+
+; (test
+;  (name test_flo)
+;  (modules test_flo)
+;  (libraries flo alcotest eio_main))
+
+; (test
+;  (name test_integration)
+;  (modules test_integration)
+;  (libraries flo alcotest eio_main))

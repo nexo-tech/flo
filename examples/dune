@@ -1,0 +1,7 @@
+; Examples will be added as modules are implemented
+; Uncomment each example as the corresponding API is completed
+
+; (executable
+;  (name simple_app)
+;  (modules simple_app)
+;  (libraries flo eio_main))
