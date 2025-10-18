@@ -10,3 +10,8 @@
  (name structured_events)
  (modules structured_events)
  (libraries flo unix))
+
+(executable
+ (name file_logging)
+ (modules file_logging)
+ (libraries flo eio_main unix))

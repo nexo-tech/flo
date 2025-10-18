@@ -567,11 +567,11 @@ Flo.catch (fun () ->
 - [x] Task 2.8: Update checklist and commit Phase 2
 
 ### Phase 3: File Sinks & Rotation (6 tasks, ~900 LOC)
-- [ ] Task 3.1: Implement `Flo_sink_file` basic file sink
-- [ ] Task 3.2: Implement file rotation (size-based)
-- [ ] Task 3.3: Implement file rotation (time-based)
-- [ ] Task 3.4: Implement file retention policies
-- [ ] Task 3.5: Create `examples/file_logging.ml`
+- [x] Task 3.1: Implement `Flo_sink_file` basic file sink
+- [x] Task 3.2: Implement file rotation (size-based)
+- [x] Task 3.3: Implement file rotation (time-based)
+- [x] Task 3.4: Implement file retention policies
+- [x] Task 3.5: Create `examples/file_logging.ml`
 - [ ] Task 3.6: Update checklist and commit Phase 3
 
 ### Phase 4: Async Sinks & Performance (5 tasks, ~800 LOC)

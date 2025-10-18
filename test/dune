@@ -75,3 +75,8 @@
  (name test_flo_semconv)
  (modules test_flo_semconv)
  (libraries flo alcotest))
+
+(test
+ (name test_flo_sink_file)
+ (modules test_flo_sink_file)
+ (libraries flo alcotest eio_main))
