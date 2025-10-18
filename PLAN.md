@@ -574,12 +574,12 @@ Flo.catch (fun () ->
 - [x] Task 3.5: Create `examples/file_logging.ml`
 - [x] Task 3.6: Update checklist and commit Phase 3
 
-### Phase 4: Async Sinks & Performance (5 tasks, ~800 LOC)
-- [ ] Task 4.1: Implement `Flo_sink_async` with ring buffer
-- [ ] Task 4.2: Implement batching and flush interval
-- [ ] Task 4.3: Implement drain on shutdown
-- [ ] Task 4.4: Create `examples/perf_app.ml`
-- [ ] Task 4.5: Update checklist and commit Phase 4
+### Phase 4: Async Sinks & Performance (5 tasks, ~800 LOC) - ✅ COMPLETE
+- [x] Task 4.1: Implement `Flo_sink_async` with ring buffer
+- [x] Task 4.2: Implement batching and flush interval
+- [x] Task 4.3: Implement drain on shutdown
+- [x] Task 4.4: Create `examples/perf_app.ml`
+- [x] Task 4.5: Update checklist and commit Phase 4
 
 ### Phase 5: Distributed Tracing Integration (6 tasks, ~700 LOC)
 - [ ] Task 5.1: Implement `Flo_eio` HTTP context extraction

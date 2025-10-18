@@ -15,3 +15,8 @@
  (name file_logging)
  (modules file_logging)
  (libraries flo eio_main unix))
+
+(executable
+ (name perf_app)
+ (modules perf_app)
+ (libraries flo eio_main unix))
