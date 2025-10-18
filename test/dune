@@ -31,10 +31,10 @@
  (modules test_flo_core)
  (libraries flo alcotest))
 
-; (test
-;  (name test_flo_context)
-;  (modules test_flo_context)
-;  (libraries flo alcotest eio_main))
+(test
+ (name test_flo_context)
+ (modules test_flo_context)
+ (libraries flo alcotest eio_main))
 
 ; (test
 ;  (name test_flo_format_pretty)
