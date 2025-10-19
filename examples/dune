@@ -81,3 +81,8 @@
  (name semantic_conventions)
  (modules semantic_conventions)
  (libraries flo eio_main unix))
+
+(executable
+ (name core_composition)
+ (modules core_composition)
+ (libraries flo))

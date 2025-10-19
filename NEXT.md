@@ -168,26 +168,26 @@
 *Goal: Ensure every code snippet in DESIGN.md has a working example*
 
 ### 3.1 Core API Examples Verification
-- [ ] Verify `simple_app.ml` covers all Simple API examples
-- [ ] Add missing Simple API examples (if any)
-- [ ] Verify all severity levels are demonstrated
-- [ ] Verify printf-style logging examples
-- [ ] Verify structured field shortcuts examples
+- [x] Verify `simple_app.ml` covers all Simple API examples
+- [x] Add missing Simple API examples (if any)
+- [x] Verify all severity levels are demonstrated
+- [x] Verify printf-style logging examples
+- [x] Verify structured field shortcuts examples
 
 ### 3.2 Advanced API Examples Verification
-- [ ] Verify structured logger examples exist
-- [ ] Add type-safe context key examples
-- [ ] Add span management examples
-- [ ] Verify structured event module examples
-- [ ] Create missing advanced API examples
+- [x] Verify structured logger examples exist - *structured_events.ml*
+- [x] Add type-safe context key examples - *structured_events.ml*
+- [x] Add span management examples - *structured_events.ml*
+- [x] Verify structured event module examples - *structured_events.ml*
+- [x] Create missing advanced API examples - *all covered*
 
 ### 3.3 Compositional API Examples Verification
-- [ ] Create `examples/core_composition.ml`
-- [ ] Example: Contramap usage
-- [ ] Example: Logger combination/monoid
-- [ ] Example: Filtering pipelines
-- [ ] Example: Custom log actions
-- [ ] Verify all Flo_core API is demonstrated
+- [x] Create `examples/core_composition.ml`
+- [x] Example: Contramap usage
+- [x] Example: Logger combination/monoid
+- [x] Example: Filtering pipelines
+- [x] Example: Custom log actions
+- [x] Verify all Flo_core API is demonstrated
 
 ### 3.4 Sink System Examples Verification
 - [ ] Verify Console sink examples
