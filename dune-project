@@ -27,3 +27,13 @@
   (yojson (>= 2.0.0))
   (ptime (>= 1.0.0))
   (alcotest (and (>= 1.7.0) :with-test))))
+
+(package
+ (name ppx_flo)
+ (synopsis "PPX extension for Flo logging library")
+ (description "PPX extension providing compile-time enhancements for Flo: automatic location capture, structured logging syntax, and span annotations.")
+ (depends
+  (ocaml (>= 5.1.0))
+  (dune (>= 3.16))
+  (ppxlib (>= 0.32.0))
+  (flo (= :version))))

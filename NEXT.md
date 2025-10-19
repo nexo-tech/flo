@@ -1,0 +1,353 @@
+# Flō - Next Steps Master Checklist
+
+## Phase 1: PPX Extension Implementation
+*Goal: Add compile-time enhancements for automatic location capture and ergonomic syntax*
+
+### 1.1 PPX Project Setup
+- [x] Create `ppx/` directory structure
+- [x] Create `ppx/dune` with ppxlib dependencies
+- [x] Create `ppx/ppx_flo.ml` main PPX rewriter
+- [x] Add `ppx_flo.opam` package file
+- [x] Update root `dune-project` to include ppx package
+
+### 1.2 Location Capture Extension
+- [ ] Implement `let%log.info` extension for automatic location capture
+- [ ] Implement `let%log.debug`, `let%log.warn`, `let%log.error` variants
+- [ ] Add `__FILE__`, `__LINE__`, `__COLUMN__` attribute expansion
+- [ ] Extract module name from context
+- [ ] Extract function name from context (if available)
+- [ ] Write tests for location capture expansion
+
+### 1.3 Structured Logging Syntax Extension
+- [ ] Implement `[%log.info "msg" ~field1:value1 ~field2:value2]` syntax
+- [ ] Auto-convert labeled arguments to structured fields
+- [ ] Support type inference for fields (String, Int, Float, Bool)
+- [ ] Generate proper `Value.t` constructors
+- [ ] Handle nested objects and arrays
+- [ ] Write tests for structured syntax expansion
+
+### 1.4 Span Annotation Extension
+- [ ] Implement `let%span "name" func = ...` syntax
+- [ ] Wrap function body in `Flo_structured.in_span`
+- [ ] Auto-capture function arguments as span attributes
+- [ ] Support async/promise-returning functions
+- [ ] Generate proper span lifecycle (start/end)
+- [ ] Write tests for span annotation expansion
+
+### 1.5 PPX Documentation & Examples
+- [ ] Create `examples/ppx_usage.ml` demonstrating all PPX features
+- [ ] Document PPX extensions in README
+- [ ] Add inline documentation to PPX code
+- [ ] Create troubleshooting guide for PPX compilation issues
+
+### 1.6 PPX Integration Testing
+- [ ] Test PPX with simple logging calls
+- [ ] Test PPX with structured logging
+- [ ] Test PPX with span annotations
+- [ ] Test PPX interaction with existing API
+- [ ] Ensure no runtime performance degradation
+- [ ] Test compilation error messages are helpful
+
+---
+
+## Phase 2: Comprehensive Examples for All Features
+*Goal: Create working examples for every documented feature*
+
+### 2.1 Custom Formatting Examples
+- [ ] Create `examples/custom_formatter.ml`
+- [ ] Example: Custom Pretty formatter with template
+- [ ] Example: Custom JSON formatter with field filtering
+- [ ] Example: Custom Logfmt formatter with key transformations
+- [ ] Example: Colored output customization
+- [ ] Example: Template placeholders usage
+- [ ] Demonstrate `Flo_format.make_template_formatter`
+
+### 2.2 Logfmt Output Examples
+- [ ] Create `examples/logfmt_output.ml`
+- [ ] Example: Basic logfmt logging to console
+- [ ] Example: Logfmt file logging
+- [ ] Example: Logfmt with structured fields
+- [ ] Example: Logfmt with nested attributes (flattening)
+- [ ] Example: Parse logfmt back to records
+- [ ] Demonstrate readability vs JSON
+
+### 2.3 JSON Logging Examples
+- [ ] Create `examples/json_logging.ml`
+- [ ] Example: JSON to stdout for log aggregators
+- [ ] Example: JSON to file with pretty-printing option
+- [ ] Example: JSON with full OpenTelemetry structure
+- [ ] Example: JSON parsing and querying
+- [ ] Example: JSON with custom field serialization
+- [ ] Demonstrate integration with log analysis tools
+
+### 2.4 Pretty Console Output Examples
+- [ ] Create `examples/pretty_console.ml`
+- [ ] Example: Colored console output (default)
+- [ ] Example: No-color mode for CI/CD
+- [ ] Example: Custom color schemes per severity
+- [ ] Example: Custom templates with placeholders
+- [ ] Example: Compact vs verbose pretty format
+- [ ] Example: Terminal detection and auto-formatting
+
+### 2.5 Multi-Sink Configuration Examples
+- [ ] Create `examples/multi_sink.ml`
+- [ ] Example: Console (pretty) + File (JSON) simultaneously
+- [ ] Example: Different log levels per sink
+- [ ] Example: Filtered sinks (errors-only file)
+- [ ] Example: Development vs production sink configs
+- [ ] Example: Dynamic sink addition/removal
+- [ ] Example: Sink performance comparison
+
+### 2.6 PPX Integration Examples
+- [ ] Create `examples/ppx_basic.ml` (location capture)
+- [ ] Create `examples/ppx_structured.ml` (structured syntax)
+- [ ] Create `examples/ppx_spans.ml` (span annotations)
+- [ ] Example: Combining PPX with manual API
+- [ ] Example: PPX for library authors
+- [ ] Example: PPX code generation inspection
+
+### 2.7 Advanced Context Propagation Examples
+- [ ] Create `examples/context_propagation.ml`
+- [ ] Example: Multi-fiber context isolation
+- [ ] Example: Parent-child context inheritance
+- [ ] Example: Context merging strategies
+- [ ] Example: Custom context keys (GADT)
+- [ ] Example: HTTP header context extraction/injection
+- [ ] Example: gRPC metadata propagation
+
+### 2.8 Performance & Async Examples
+- [ ] Create `examples/high_performance.ml`
+- [ ] Example: Async sink with batching
+- [ ] Example: Lock-free logging from multiple domains
+- [ ] Example: Zero-allocation fast path
+- [ ] Example: Lazy message evaluation
+- [ ] Example: Benchmarking logging overhead
+- [ ] Example: Production tuning guide
+
+### 2.9 Testing & Mock Sink Examples
+- [ ] Create `examples/testing_with_flo.ml`
+- [ ] Example: In-memory test sink
+- [ ] Example: Asserting log messages in tests
+- [ ] Example: Checking structured field values
+- [ ] Example: Testing span relationships
+- [ ] Example: Mocking for library testing
+- [ ] Example: Integration testing with logs
+
+### 2.10 Error Handling & Exceptions Examples
+- [ ] Create `examples/error_handling.ml`
+- [ ] Example: Exception decorator (`catch`)
+- [ ] Example: Logging exceptions with backtraces
+- [ ] Example: Error context propagation
+- [ ] Example: Structured error events
+- [ ] Example: Error rate monitoring
+- [ ] Example: Panic vs recoverable errors
+
+### 2.11 Distributed Tracing Examples
+- [ ] Create `examples/distributed_tracing.ml`
+- [ ] Example: End-to-end trace across services
+- [ ] Example: W3C Trace Context parsing/formatting
+- [ ] Example: Span relationships (parent/child)
+- [ ] Example: Trace sampling strategies
+- [ ] Example: Integrating with OpenTelemetry collector
+- [ ] Example: Visualizing traces
+
+### 2.12 Semantic Conventions Examples
+- [ ] Create `examples/semantic_conventions.ml`
+- [ ] Example: HTTP server instrumentation
+- [ ] Example: Database operation logging
+- [ ] Example: RPC call instrumentation
+- [ ] Example: Cloud provider attributes
+- [ ] Example: User/session tracking
+- [ ] Example: Custom semantic conventions
+
+---
+
+## Phase 3: Missing Examples from Documentation
+*Goal: Ensure every code snippet in DESIGN.md has a working example*
+
+### 3.1 Core API Examples Verification
+- [ ] Verify `simple_app.ml` covers all Simple API examples
+- [ ] Add missing Simple API examples (if any)
+- [ ] Verify all severity levels are demonstrated
+- [ ] Verify printf-style logging examples
+- [ ] Verify structured field shortcuts examples
+
+### 3.2 Advanced API Examples Verification
+- [ ] Verify structured logger examples exist
+- [ ] Add type-safe context key examples
+- [ ] Add span management examples
+- [ ] Verify structured event module examples
+- [ ] Create missing advanced API examples
+
+### 3.3 Compositional API Examples Verification
+- [ ] Create `examples/core_composition.ml`
+- [ ] Example: Contramap usage
+- [ ] Example: Logger combination/monoid
+- [ ] Example: Filtering pipelines
+- [ ] Example: Custom log actions
+- [ ] Verify all Flo_core API is demonstrated
+
+### 3.4 Sink System Examples Verification
+- [ ] Verify Console sink examples
+- [ ] Verify File sink examples
+- [ ] Verify Rotating_File sink examples
+- [ ] Verify Async_Sink examples
+- [ ] Add Custom sink implementation example
+- [ ] Create `examples/custom_sink.ml`
+
+### 3.5 Formatter Examples Verification
+- [ ] Verify JSON formatter examples
+- [ ] Verify Logfmt formatter examples
+- [ ] Verify Pretty formatter examples
+- [ ] Add template formatter examples
+- [ ] Create `examples/custom_template.ml`
+
+### 3.6 Eio Integration Examples Verification
+- [ ] Verify fiber-local context examples
+- [ ] Verify structured concurrency examples
+- [ ] Verify HTTP context extraction examples
+- [ ] Add switch lifecycle examples
+- [ ] Create `examples/eio_integration.ml`
+
+---
+
+## Phase 4: Testing & Quality Assurance
+*Goal: Ensure all new features have comprehensive tests*
+
+### 4.1 PPX Tests
+- [ ] Unit tests for location capture
+- [ ] Unit tests for structured syntax expansion
+- [ ] Unit tests for span annotation
+- [ ] Integration tests with actual logging
+- [ ] Error message tests (bad syntax)
+- [ ] Edge case tests (nested extensions)
+
+### 4.2 Example Tests
+- [ ] All examples compile without warnings
+- [ ] All examples run successfully
+- [ ] Add automated example testing in CI
+- [ ] Verify example output is correct
+- [ ] Check examples against DESIGN.md specs
+
+### 4.3 Formatter Tests
+- [ ] Custom formatter tests
+- [ ] Template formatter tests
+- [ ] Logfmt edge cases
+- [ ] JSON edge cases
+- [ ] Pretty formatter color tests
+
+### 4.4 Integration Tests
+- [ ] Multi-sink integration test
+- [ ] PPX + API integration test
+- [ ] Distributed tracing end-to-end test
+- [ ] Performance regression tests
+- [ ] Memory leak tests
+
+---
+
+## Phase 5: Documentation & Polish
+*Goal: Complete documentation and prepare for release*
+
+### 5.1 API Documentation
+- [ ] Complete all module interface docs
+- [ ] Add examples to all public functions
+- [ ] Document all PPX extensions
+- [ ] Create API reference guide
+- [ ] Add migration guide from Logs library
+
+### 5.2 Tutorial Enhancement
+- [ ] Update TUTORIAL.md with PPX usage
+- [ ] Add formatter customization tutorial
+- [ ] Add testing best practices
+- [ ] Add production deployment guide
+- [ ] Add troubleshooting section
+
+### 5.3 README Updates
+- [ ] Add PPX section to README
+- [ ] Add formatter examples to README
+- [ ] Update feature list
+- [ ] Add shields/badges
+- [ ] Update installation instructions
+
+### 5.4 Example Documentation
+- [ ] Add header comments to all examples
+- [ ] Create examples/README.md index
+- [ ] Cross-reference examples with DESIGN.md
+- [ ] Add "See also" links between related examples
+- [ ] Create quick-start example selector
+
+---
+
+## Phase 6: Build & Release Preparation
+*Goal: Ensure library is production-ready*
+
+### 6.1 Build System
+- [ ] Verify dune build works cleanly
+- [ ] Ensure no compilation warnings
+- [ ] Add dune runtest target for examples
+- [ ] Configure CI/CD for testing
+- [ ] Add benchmark suite
+
+### 6.2 Packaging
+- [ ] Update opam files
+- [ ] Add ppx_flo to opam repository
+- [ ] Test installation from opam
+- [ ] Verify dependencies are correct
+- [ ] Create release notes
+
+### 6.3 Final Quality Checks
+- [ ] 100% test pass rate
+- [ ] No warnings in build
+- [ ] All examples work
+- [ ] Documentation is complete
+- [ ] Performance benchmarks meet targets
+- [ ] Security review (log injection prevention)
+
+---
+
+## Summary Checklist
+
+### Phase 1: PPX Extension
+- [ ] PPX project setup complete
+- [ ] Location capture working
+- [ ] Structured syntax working
+- [ ] Span annotations working
+- [ ] PPX documented and tested
+
+### Phase 2: Comprehensive Examples
+- [ ] Custom formatting examples
+- [ ] Logfmt examples
+- [ ] JSON examples
+- [ ] Pretty console examples
+- [ ] Multi-sink examples
+- [ ] PPX examples
+- [ ] Context propagation examples
+- [ ] Performance examples
+- [ ] Testing examples
+- [ ] Error handling examples
+- [ ] Distributed tracing examples
+- [ ] Semantic conventions examples
+
+### Phase 3: Documentation Coverage
+- [ ] All DESIGN.md examples have working code
+- [ ] All public API is demonstrated
+- [ ] All formatters have examples
+- [ ] All sinks have examples
+
+### Phase 4: Quality
+- [ ] All tests passing (100%)
+- [ ] No compilation warnings
+- [ ] Examples automated in CI
+- [ ] Performance validated
+
+### Phase 5: Documentation
+- [ ] API docs complete
+- [ ] Tutorial updated
+- [ ] README updated
+- [ ] Examples documented
+
+### Phase 6: Release Ready
+- [ ] Build system clean
+- [ ] Packaging complete
+- [ ] Final quality checks passed
+- [ ] Ready for v1.0 release
