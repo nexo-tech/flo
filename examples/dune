@@ -31,3 +31,13 @@
  (modules ppx_usage)
  (libraries flo eio_main)
  (preprocess (pps ppx_flo)))
+
+(executable
+ (name custom_formatter)
+ (modules custom_formatter)
+ (libraries flo eio_main str))
+
+(executable
+ (name logfmt_output)
+ (modules logfmt_output)
+ (libraries flo eio_main))

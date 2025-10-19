@@ -56,22 +56,22 @@
 *Goal: Create working examples for every documented feature*
 
 ### 2.1 Custom Formatting Examples
-- [ ] Create `examples/custom_formatter.ml`
-- [ ] Example: Custom Pretty formatter with template
-- [ ] Example: Custom JSON formatter with field filtering
-- [ ] Example: Custom Logfmt formatter with key transformations
-- [ ] Example: Colored output customization
-- [ ] Example: Template placeholders usage
-- [ ] Demonstrate `Flo_format.make_template_formatter`
+- [x] Create `examples/custom_formatter.ml`
+- [x] Example: Custom Pretty formatter with template
+- [x] Example: Custom JSON formatter with field filtering
+- [x] Example: Custom Logfmt formatter with key transformations
+- [x] Example: Colored output customization
+- [x] Example: Template placeholders usage
+- [x] Demonstrate `Flo_format.make_template_formatter`
 
 ### 2.2 Logfmt Output Examples
-- [ ] Create `examples/logfmt_output.ml`
-- [ ] Example: Basic logfmt logging to console
-- [ ] Example: Logfmt file logging
-- [ ] Example: Logfmt with structured fields
-- [ ] Example: Logfmt with nested attributes (flattening)
-- [ ] Example: Parse logfmt back to records
-- [ ] Demonstrate readability vs JSON
+- [x] Create `examples/logfmt_output.ml`
+- [x] Example: Basic logfmt logging to console
+- [x] Example: Logfmt file logging
+- [x] Example: Logfmt with structured fields
+- [x] Example: Logfmt with nested attributes (flattening)
+- [x] Example: Parse logfmt back to records
+- [x] Demonstrate readability vs JSON
 
 ### 2.3 JSON Logging Examples
 - [ ] Create `examples/json_logging.ml`
