@@ -1,7 +1,9 @@
 # Flō - Next Steps Master Checklist
 
-## Phase 1: PPX Extension Implementation
+## Phase 1: PPX Extension Implementation ✅ COMPLETE
 *Goal: Add compile-time enhancements for automatic location capture and ergonomic syntax*
+
+**Status: All tasks completed with bonus variable support enhancement!**
 
 ### 1.1 PPX Project Setup
 - [x] Create `ppx/` directory structure
@@ -215,12 +217,13 @@
 *Goal: Ensure all new features have comprehensive tests*
 
 ### 4.1 PPX Tests
-- [ ] Unit tests for location capture
-- [ ] Unit tests for structured syntax expansion
-- [ ] Unit tests for span annotation
-- [ ] Integration tests with actual logging
-- [ ] Error message tests (bad syntax)
-- [ ] Edge case tests (nested extensions)
+- [x] Unit tests for location capture (8 tests)
+- [x] Unit tests for structured syntax expansion (11 tests)
+- [x] Unit tests for span annotation (8 tests)
+- [x] Unit tests for variable support (11 tests)
+- [x] Integration tests with actual logging
+- [x] Error message tests (bad syntax)
+- [x] Edge case tests (nested extensions)
 
 ### 4.2 Example Tests
 - [ ] All examples compile without warnings
@@ -308,11 +311,11 @@
 ## Summary Checklist
 
 ### Phase 1: PPX Extension
-- [ ] PPX project setup complete
-- [ ] Location capture working
-- [ ] Structured syntax working
-- [ ] Span annotations working
-- [ ] PPX documented and tested
+- [x] PPX project setup complete
+- [x] Location capture working
+- [x] Structured syntax working (with variable support!)
+- [x] Span annotations working
+- [x] PPX documented and tested
 
 ### Phase 2: Comprehensive Examples
 - [ ] Custom formatting examples
