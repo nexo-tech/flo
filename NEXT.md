@@ -226,18 +226,18 @@
 - [x] Edge case tests (nested extensions)
 
 ### 4.2 Example Tests
-- [ ] All examples compile without warnings
-- [ ] All examples run successfully
-- [ ] Add automated example testing in CI
-- [ ] Verify example output is correct
-- [ ] Check examples against DESIGN.md specs
+- [x] All examples compile without warnings
+- [x] All examples run successfully
+- [x] Add automated example testing in CI
+- [x] Verify example output is correct
+- [x] Check examples against DESIGN.md specs
 
 ### 4.3 Formatter Tests
-- [ ] Custom formatter tests
-- [ ] Template formatter tests
-- [ ] Logfmt edge cases
-- [ ] JSON edge cases
-- [ ] Pretty formatter color tests
+- [x] Custom formatter tests
+- [x] Template formatter tests
+- [x] Logfmt edge cases
+- [x] JSON edge cases
+- [x] Pretty formatter color tests
 
 ### 4.4 Integration Tests
 - [ ] Multi-sink integration test
