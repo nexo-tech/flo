@@ -11,12 +11,12 @@
 - [x] Update root `dune-project` to include ppx package
 
 ### 1.2 Location Capture Extension
-- [ ] Implement `let%log.info` extension for automatic location capture
-- [ ] Implement `let%log.debug`, `let%log.warn`, `let%log.error` variants
-- [ ] Add `__FILE__`, `__LINE__`, `__COLUMN__` attribute expansion
-- [ ] Extract module name from context
-- [ ] Extract function name from context (if available)
-- [ ] Write tests for location capture expansion
+- [x] Implement `let%log.info` extension for automatic location capture
+- [x] Implement `let%log.debug`, `let%log.warn`, `let%log.error` variants
+- [x] Add `__FILE__`, `__LINE__`, `__COLUMN__` attribute expansion
+- [x] Extract module name from context
+- [x] Extract function name from context (if available)
+- [x] Write tests for location capture expansion
 
 ### 1.3 Structured Logging Syntax Extension
 - [ ] Implement `[%log.info "msg" ~field1:value1 ~field2:value2]` syntax

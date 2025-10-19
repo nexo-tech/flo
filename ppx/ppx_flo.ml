@@ -12,16 +12,42 @@ open Ppxlib
    Helper Functions
    ======================================================================== *)
 
-(* Extract location information from Ppxlib location *)
+(* Extract module name from file path *)
+let module_name_of_file file =
+  let basename = Filename.basename file in
+  let without_ext = Filename.chop_extension basename in
+  String.capitalize_ascii without_ext
+
+(* Extract location information from Ppxlib location and code path *)
+let location_expr_full ~loc _code_path =
+  let file = loc.loc_start.pos_fname in
+  let line = loc.loc_start.pos_lnum in
+  let column = loc.loc_start.pos_cnum - loc.loc_start.pos_bol in
+  let module_name = module_name_of_file file in
+
+  (* Note: Function name extraction from code_path requires deeper ppxlib integration
+     Will be implemented in a future phase if needed *)
+  [%expr
+    Location.make_full
+      ~file:[%e Ast_builder.Default.estring ~loc file]
+      ~line:[%e Ast_builder.Default.eint ~loc line]
+      ~column:[%e Ast_builder.Default.eint ~loc column]
+      ~module_name:[%e Ast_builder.Default.estring ~loc module_name]
+      ()
+  ]
+
+(* Simple location expression without code path (for backward compat) *)
 let location_expr ~loc =
   let file = loc.loc_start.pos_fname in
   let line = loc.loc_start.pos_lnum in
   let column = loc.loc_start.pos_cnum - loc.loc_start.pos_bol in
+  let module_name = module_name_of_file file in
   [%expr
-    Location.make
+    Location.make_full
       ~file:[%e Ast_builder.Default.estring ~loc file]
       ~line:[%e Ast_builder.Default.eint ~loc line]
       ~column:[%e Ast_builder.Default.eint ~loc column]
+      ~module_name:[%e Ast_builder.Default.estring ~loc module_name]
       ()
   ]
 
@@ -49,33 +75,25 @@ let value_of_expr ~loc expr =
    let%log.info "message" -> Flo.info ~location:... "message"
    ======================================================================== *)
 
-let expand_log_extension ~ctxt payload =
+(* Extension for let%log.<level> style - captures location automatically *)
+let expand_let_log_extension level ~ctxt expr =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let code_path = Expansion_context.Extension.code_path ctxt in
 
-  match payload with
-  | PStr [{ pstr_desc = Pstr_eval (expr, _); _ }] -> begin
-      match expr.pexp_desc with
-      | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident level; _ }; _ }, args) ->
-          (* Build the location expression *)
-          let loc_expr = location_expr ~loc in
+  (* Build the location expression with full context *)
+  let loc_expr = location_expr_full ~loc code_path in
 
-          (* Reconstruct the call with location parameter *)
-          let flo_func =
-            Ast_builder.Default.pexp_ident ~loc
-              (Ast_builder.Default.Located.mk ~loc (Ldot (Lident "Flo", level)))
-          in
+  (* Build call to Flo.<level> ~location:... message *)
+  let flo_func =
+    Ast_builder.Default.pexp_ident ~loc
+      (Ast_builder.Default.Located.mk ~loc (Ldot (Lident "Flo", level)))
+  in
 
-          (* Add ~location parameter to arguments *)
-          let new_args = args @ [(Labelled "location", loc_expr)] in
-          Ast_builder.Default.pexp_apply ~loc flo_func new_args
-
-      | _ ->
-          Location.raise_errorf ~loc
-            "ppx_flo: let%%log extension expects a logging function call"
-    end
-  | _ ->
-      Location.raise_errorf ~loc
-        "ppx_flo: let%%log extension expects an expression"
+  (* Add location as first labeled argument *)
+  Ast_builder.Default.pexp_apply ~loc flo_func [
+    (Labelled "location", loc_expr);
+    (Nolabel, expr)
+  ]
 
 (* ========================================================================
    Feature 2: Structured Logging Syntax
@@ -142,29 +160,38 @@ let expand_span_annotation ~ctxt span_name vb =
    PPX Extension Points Registration
    ======================================================================== *)
 
-(* Register extension for [%log.info ...] style *)
-let structured_log_extension level =
+(* Register extension for [%log.info ...] style - with location capture *)
+let bracket_log_extension level =
   Extension.V3.declare
     ("log." ^ level)
     Extension.Context.expression
     Ast_pattern.(single_expr_payload __)
     (fun ~ctxt expr ->
+      let loc = Expansion_context.Extension.extension_point_loc ctxt in
+      let code_path = Expansion_context.Extension.code_path ctxt in
+
       match expr.pexp_desc with
       | Pexp_apply (message, labeled_args) when List.length labeled_args > 0 ->
+          (* Structured logging with fields *)
           expand_structured_log ~ctxt level message labeled_args
       | _ ->
-          (* Fallback: simple message without structured fields *)
-          let loc = Expansion_context.Extension.extension_point_loc ctxt in
+          (* Simple message with automatic location capture *)
+          let loc_expr = location_expr_full ~loc code_path in
           let func_ident =
             Ast_builder.Default.pexp_ident ~loc
               (Ast_builder.Default.Located.mk ~loc (Ldot (Lident "Flo", level)))
           in
-          Ast_builder.Default.pexp_apply ~loc func_ident [(Nolabel, expr)]
+          Ast_builder.Default.pexp_apply ~loc func_ident [
+            (Labelled "location", loc_expr);
+            (Nolabel, expr)
+          ]
     )
 
-(* Register all log level extensions *)
+(* Register all [%log.level] and let%log.level extensions
+   Note: Both [%...] and let%... use the same extension names, but
+   ppxlib handles them differently based on the AST context where they appear *)
 let log_extensions =
-  List.map structured_log_extension
+  List.map bracket_log_extension
     ["trace"; "debug"; "info"; "success"; "warn"; "error"; "fatal"]
 
 (* Note: let%span extension will be implemented in Phase 1.4

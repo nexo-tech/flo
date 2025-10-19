@@ -15,25 +15,25 @@
 (** Pre-configured global logger - works immediately *)
 
 (** Log at TRACE level (fine-grained debugging) *)
-val trace : string -> unit
+val trace : ?location:Location.t -> string -> unit
 
 (** Log at DEBUG level (debug information) *)
-val debug : string -> unit
+val debug : ?location:Location.t -> string -> unit
 
 (** Log at INFO level (informational events) *)
-val info : string -> unit
+val info : ?location:Location.t -> string -> unit
 
 (** Log at SUCCESS level (successful operations - celebrate when things work!) *)
-val success : string -> unit
+val success : ?location:Location.t -> string -> unit
 
 (** Log at WARN level (warning conditions) *)
-val warn : string -> unit
+val warn : ?location:Location.t -> string -> unit
 
 (** Log at ERROR level (error events) *)
-val error : string -> unit
+val error : ?location:Location.t -> string -> unit
 
 (** Log at FATAL level (critical failures) *)
-val fatal : string -> unit
+val fatal : ?location:Location.t -> string -> unit
 
 (** {1 Printf-Style Logging} *)
 

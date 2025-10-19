@@ -14,8 +14,12 @@ let dispatch_record record =
     flush stderr
 
 (* Helper to create and dispatch record *)
-let log_message severity message =
+let log_message ?location severity message =
   let record = Record.make ~severity ~message in
+  let record = match location with
+    | Some loc -> Record.with_location loc record
+    | None -> record
+  in
   let record = match Flo_context.get_current () with
     | Some ctx ->
         let attrs = Flo_context.to_list ctx in
@@ -25,13 +29,13 @@ let log_message severity message =
   dispatch_record record
 
 (* Zero-configuration logging *)
-let trace msg = log_message Severity.Trace msg
-let debug msg = log_message Severity.Debug msg
-let info msg = log_message Severity.Info msg
-let success msg = log_message Severity.Success msg
-let warn msg = log_message Severity.Warn msg
-let error msg = log_message Severity.Error msg
-let fatal msg = log_message Severity.Fatal msg
+let trace ?location msg = log_message ?location Severity.Trace msg
+let debug ?location msg = log_message ?location Severity.Debug msg
+let info ?location msg = log_message ?location Severity.Info msg
+let success ?location msg = log_message ?location Severity.Success msg
+let warn ?location msg = log_message ?location Severity.Warn msg
+let error ?location msg = log_message ?location Severity.Error msg
+let fatal ?location msg = log_message ?location Severity.Fatal msg
 
 (* Printf-style logging *)
 let tracef fmt = Printf.ksprintf trace fmt
