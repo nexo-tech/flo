@@ -118,31 +118,31 @@
 - [x] Example: gRPC metadata propagation - *same pattern as HTTP*
 
 ### 2.8 Performance & Async Examples
-- [ ] Create `examples/high_performance.ml`
-- [ ] Example: Async sink with batching
-- [ ] Example: Lock-free logging from multiple domains
-- [ ] Example: Zero-allocation fast path
-- [ ] Example: Lazy message evaluation
-- [ ] Example: Benchmarking logging overhead
-- [ ] Example: Production tuning guide
+- [x] Create `examples/high_performance.ml` - *covered in perf_app.ml (317 lines)*
+- [x] Example: Async sink with batching - *covered in perf_app.ml*
+- [x] Example: Lock-free logging from multiple domains - *covered in perf_app.ml*
+- [x] Example: Zero-allocation fast path - *covered in perf_app.ml*
+- [x] Example: Lazy message evaluation - *covered in perf_app.ml*
+- [x] Example: Benchmarking logging overhead - *covered in perf_app.ml*
+- [x] Example: Production tuning guide - *covered in perf_app.ml*
 
 ### 2.9 Testing & Mock Sink Examples
-- [ ] Create `examples/testing_with_flo.ml`
-- [ ] Example: In-memory test sink
-- [ ] Example: Asserting log messages in tests
-- [ ] Example: Checking structured field values
-- [ ] Example: Testing span relationships
-- [ ] Example: Mocking for library testing
-- [ ] Example: Integration testing with logs
+- [x] Create `examples/testing_with_flo.ml`
+- [x] Example: In-memory test sink
+- [x] Example: Asserting log messages in tests
+- [x] Example: Checking structured field values
+- [x] Example: Testing span relationships
+- [x] Example: Mocking for library testing
+- [x] Example: Integration testing with logs
 
 ### 2.10 Error Handling & Exceptions Examples
-- [ ] Create `examples/error_handling.ml`
-- [ ] Example: Exception decorator (`catch`)
-- [ ] Example: Logging exceptions with backtraces
-- [ ] Example: Error context propagation
-- [ ] Example: Structured error events
-- [ ] Example: Error rate monitoring
-- [ ] Example: Panic vs recoverable errors
+- [x] Create `examples/error_handling.ml`
+- [x] Example: Exception decorator (`catch`)
+- [x] Example: Logging exceptions with backtraces
+- [x] Example: Error context propagation
+- [x] Example: Structured error events
+- [x] Example: Error rate monitoring
+- [x] Example: Panic vs recoverable errors
 
 ### 2.11 Distributed Tracing Examples
 - [ ] Create `examples/distributed_tracing.ml`

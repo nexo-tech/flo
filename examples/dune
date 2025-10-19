@@ -61,3 +61,13 @@
  (name context_propagation)
  (modules context_propagation)
  (libraries flo eio_main))
+
+(executable
+ (name testing_with_flo)
+ (modules testing_with_flo)
+ (libraries flo))
+
+(executable
+ (name error_handling)
+ (modules error_handling)
+ (libraries flo eio_main))
