@@ -1,0 +1,4 @@
+(executable
+ (name bench_logging)
+ (modules bench_logging)
+ (libraries flo unix))
