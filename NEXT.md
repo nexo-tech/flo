@@ -145,22 +145,22 @@
 - [x] Example: Panic vs recoverable errors
 
 ### 2.11 Distributed Tracing Examples
-- [ ] Create `examples/distributed_tracing.ml`
-- [ ] Example: End-to-end trace across services
-- [ ] Example: W3C Trace Context parsing/formatting
-- [ ] Example: Span relationships (parent/child)
-- [ ] Example: Trace sampling strategies
-- [ ] Example: Integrating with OpenTelemetry collector
-- [ ] Example: Visualizing traces
+- [x] Create `examples/distributed_tracing.ml`
+- [x] Example: End-to-end trace across services
+- [x] Example: W3C Trace Context parsing/formatting
+- [x] Example: Span relationships (parent/child)
+- [x] Example: Trace sampling strategies
+- [x] Example: Integrating with OpenTelemetry collector
+- [x] Example: Visualizing traces
 
 ### 2.12 Semantic Conventions Examples
-- [ ] Create `examples/semantic_conventions.ml`
-- [ ] Example: HTTP server instrumentation
-- [ ] Example: Database operation logging
-- [ ] Example: RPC call instrumentation
-- [ ] Example: Cloud provider attributes
-- [ ] Example: User/session tracking
-- [ ] Example: Custom semantic conventions
+- [x] Create `examples/semantic_conventions.ml`
+- [x] Example: HTTP server instrumentation
+- [x] Example: Database operation logging
+- [x] Example: RPC call instrumentation
+- [x] Example: Cloud provider attributes
+- [x] Example: User/session tracking
+- [x] Example: Custom semantic conventions
 
 ---
 

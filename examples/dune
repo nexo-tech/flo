@@ -71,3 +71,13 @@
  (name error_handling)
  (modules error_handling)
  (libraries flo eio_main))
+
+(executable
+ (name distributed_tracing)
+ (modules distributed_tracing)
+ (libraries flo eio_main))
+
+(executable
+ (name semantic_conventions)
+ (modules semantic_conventions)
+ (libraries flo eio_main unix))
