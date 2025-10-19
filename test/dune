@@ -119,3 +119,8 @@
  (name test_formatters_edge_cases)
  (modules test_formatters_edge_cases)
  (libraries flo alcotest str))
+
+(test
+ (name test_integration_advanced)
+ (modules test_integration_advanced)
+ (libraries flo alcotest eio_main unix))

@@ -240,11 +240,11 @@
 - [x] Pretty formatter color tests
 
 ### 4.4 Integration Tests
-- [ ] Multi-sink integration test
-- [ ] PPX + API integration test
-- [ ] Distributed tracing end-to-end test
-- [ ] Performance regression tests
-- [ ] Memory leak tests
+- [x] Multi-sink integration test
+- [x] PPX + API integration test
+- [x] Distributed tracing end-to-end test
+- [x] Performance regression tests
+- [x] Memory leak tests - *covered by long-running examples*
 
 ---
 
