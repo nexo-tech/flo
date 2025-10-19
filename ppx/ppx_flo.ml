@@ -118,8 +118,10 @@ let rec value_of_expr ~loc expr =
       let obj_list = Ast_builder.Default.elist ~loc field_exprs in
       [%expr Value.Object [%e obj_list]]
 
-  (* All other cases - pass through unchanged for runtime evaluation *)
-  | _ -> expr
+  (* All other cases - use runtime auto-conversion *)
+  | _ ->
+      (* For variables and complex expressions, use the runtime auto converter *)
+      [%expr Flo_ppx_runtime.auto [%e expr]]
 
 (* ========================================================================
    Feature 1: Automatic Location Capture

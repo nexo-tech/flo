@@ -90,29 +90,32 @@ Flo.info_fields ~location:(...) "Order created" ~fields:[
 | `[]` | `Value.Array []` | `~tags:[]` |
 | `[1; 2; 3]` | `Value.Array [...]` | `~nums:[1; 2; 3]` |
 
-### Important Limitations
+### Variable Support
 
-⚠️ **The PPX only works with literal values, not variables:**
+✅ **The PPX works with both literals AND variables!**
 
 ```ocaml
 (* ✓ Works - literal value *)
 [%log.info "Message" ~count:42]
 
-(* ✗ Doesn't work - variable *)
+(* ✓ Also works - variable *)
 let count = 42 in
-[%log.info "Message" ~count]  (* ERROR *)
+[%log.info "Message" ~count]
 
-(* ✓ Workaround - use manual API *)
-let count = 42 in
-Flo.info_fields "Message" ~fields:[
-  ("count", Value.Int (Int64.of_int count))
-]
+(* ✓ Also works - computed value *)
+let count = List.length items in
+[%log.info "Message" ~count]
+
+(* ✓ Also works - function results *)
+let user = get_user_id () in
+[%log.info "Message" ~user]
 ```
 
-**Why this limitation?**
-- PPX runs at compile time, before runtime values exist
-- Variables require runtime type information
-- Use manual API for dynamic/computed values
+**How it works:**
+- Literals are converted at compile time (zero overhead)
+- Variables use runtime type-directed conversion (`Flo_ppx_runtime.auto`)
+- Automatic type detection for: string, int, float, bool, int64
+- Works seamlessly with OCaml's type inference
 
 ## Feature 3: Span Annotations
 
@@ -183,22 +186,17 @@ let handle_request () = [%span
 
 ## Troubleshooting
 
-### Error: "This expression has type X but an expression was expected of type Value.t"
+### Error: "Unbound module Flo_ppx_runtime"
 
-**Cause:** You're using a variable in a PPX structured log field.
+**Cause:** The PPX runtime module is not available.
 
-**Solution:** Use literals or switch to the manual API:
+**Solution:** Make sure you have `flo` library in your dependencies:
 
-```ocaml
-(* Instead of: *)
-let user_id = get_user_id () in
-[%log.info "User" ~user_id]  (* ERROR *)
-
-(* Use: *)
-let user_id = get_user_id () in
-Flo.info_fields "User" ~fields:[
-  ("user_id", Value.String user_id)
-]
+```dune
+(executable
+ (name my_app)
+ (libraries flo)  ; Ensure flo is in libraries
+ (preprocess (pps ppx_flo)))
 ```
 
 ### Error: "ppx_flo: fields must be labeled arguments"
@@ -253,17 +251,16 @@ Flo.info_fields "User" ~fields:[
 
 ## Best Practices
 
-### 1. Use PPX for literals, manual API for dynamic values
+### 1. Use PPX for ergonomic logging (works with both literals and variables)
 
 ```ocaml
-(* Good: Static configuration *)
+(* Great: Static configuration with literals *)
 [%log.info "Server started" ~port:8080 ~env:"production"]
 
-(* Good: Dynamic data with manual API *)
-Flo.info_fields "Request processed" ~fields:[
-  ("user_id", Value.String user_id);
-  ("duration_ms", Value.Float duration);
-]
+(* Great: Dynamic data with variables *)
+let user_id = get_user_id () in
+let duration = compute_duration () in
+[%log.info "Request processed" ~user_id ~duration]
 ```
 
 ### 2. Combine PPX location with manual fields
@@ -290,16 +287,15 @@ let handle_order order_id = [%span
 ]
 ```
 
-### 4. Mix PPX with manual API as needed
+### 4. Use computed values directly in PPX
 
 ```ocaml
 let process_batch items =
-  [%log.info "Starting batch" ~size:(List.length items)];  (* ERROR - variable *)
+  let size = List.length items in
+  [%log.info "Starting batch" ~size];  (* Works with variables! *)
 
-  (* Use manual API instead *)
-  Flo.info_fields "Starting batch" ~fields:[
-    ("size", Value.Int (Int64.of_int (List.length items)))
-  ]
+  (* You can also use complex expressions *)
+  [%log.info "Processing" ~total:(List.length items * 2)];
 ```
 
 ## Examples
@@ -319,10 +315,10 @@ The PPX is **100% compatible** with the manual API:
 
 Potential future additions (not currently implemented):
 
-- Variable capture in structured fields
-- Custom span names (currently fixed to "span")
+- Custom span names in [%span] (currently fixed to "span")
 - Function argument auto-capture in spans
-- Format string support in PPX extensions
+- Format string support in PPX extensions (e.g., `[%log.infof "Count: %d" count]`)
+- Type-safe field validation at compile time
 
 ---
 

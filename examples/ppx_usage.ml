@@ -163,39 +163,43 @@ let example_nested_spans () =
 let example_span_with_structured_logging () =
   Eio.traceln "\n=== Span + Structured Logging ===\n";
 
-  let process_order () = [%span
+  let process_order order_id user_id total = [%span
     begin
+      (* Variables now work seamlessly with PPX! *)
       [%log.info "Processing order"
-        ~order_id:"ORD-123"
-        ~user_id:"alice"
-        ~total:99.99];
+        ~order_id
+        ~user_id
+        ~total];
 
       (* Simulate some processing *)
-      let _items = [%span
+      let items = [%span
         begin
-          [%log.debug "Fetching items" ~order_id:"ORD-123"];
+          [%log.debug "Fetching items" ~order_id];
           ["item1"; "item2"; "item3"]
         end
       ] in
 
-      let _shipping = [%span
+      let item_count = List.length items in
+      let shipping = [%span
         begin
-          [%log.debug "Calculating shipping" ~item_count:3];
+          [%log.debug "Calculating shipping" ~item_count];
           5.99
         end
       ] in
 
-      [%log.success "Order processed"
-        ~order_id:"ORD-123"
-        ~item_count:3
-        ~shipping_cost:5.99
-        ~final_total:105.98];
+      let final = total +. shipping in
 
-      105.98
+      [%log.success "Order processed"
+        ~order_id
+        ~item_count
+        ~shipping_cost:shipping
+        ~final_total:final];
+
+      final
     end
   ] in
 
-  let final_total = process_order () in
+  let final_total = process_order "ORD-123" "alice" 99.99 in
   Eio.traceln "Final total: $%.2f" final_total
 
 (* ============================================================================
@@ -213,8 +217,9 @@ let example_span_exception_handling () =
         failwith "Intentional error for demo"
       end
     ]
-  with Failure _msg ->
-    [%log.error "Caught exception" ~error:"Intentional error for demo"];
+  with Failure msg ->
+    (* Variables work in exception handlers too! *)
+    [%log.error "Caught exception" ~error:msg];
     "error"
   in
 
@@ -259,35 +264,28 @@ let example_mixed_usage () =
 let handle_http_request method_ path user_id =
   [%span
     begin
-      (* Note: PPX structured logging works best with literals, not variables *)
-      (* For variables, use the manual API *)
-      Flo.info_fields "HTTP request received" ~fields:[
-        ("method", Value.String method_);
-        ("path", Value.String path);
-        ("user_id", Value.String user_id);
-      ];
+      (* PPX now supports variables with automatic type conversion! *)
+      [%log.info "HTTP request received"
+        ~method_
+        ~path
+        ~user_id];
 
       (* Simulate request processing in a span *)
       let response_status = [%span
         begin
-          Flo.debug_fields "Authenticating user" ~fields:[
-            ("user_id", Value.String user_id);
-          ];
-          Flo.debug_fields "Processing request" ~fields:[
-            ("path", Value.String path);
-          ];
+          [%log.debug "Authenticating user" ~user_id];
+          [%log.debug "Processing request" ~path];
 
           (* Simulate some work *)
           if method_ = "POST" then 201 else 200
         end
       ] in
 
-      Flo.success_fields "HTTP request completed" ~fields:[
-        ("method", Value.String method_);
-        ("path", Value.String path);
-        ("status", Value.Int (Int64.of_int response_status));
-        ("user_id", Value.String user_id);
-      ];
+      [%log.success "HTTP request completed"
+        ~method_
+        ~path
+        ~status:response_status
+        ~user_id];
 
       response_status
     end
