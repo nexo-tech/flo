@@ -86,3 +86,13 @@
  (name core_composition)
  (modules core_composition)
  (libraries flo))
+
+(executable
+ (name custom_sink)
+ (modules custom_sink)
+ (libraries flo unix))
+
+(executable
+ (name eio_integration)
+ (modules eio_integration)
+ (libraries flo eio_main))

@@ -190,26 +190,26 @@
 - [x] Verify all Flo_core API is demonstrated
 
 ### 3.4 Sink System Examples Verification
-- [ ] Verify Console sink examples
-- [ ] Verify File sink examples
-- [ ] Verify Rotating_File sink examples
-- [ ] Verify Async_Sink examples
-- [ ] Add Custom sink implementation example
-- [ ] Create `examples/custom_sink.ml`
+- [x] Verify Console sink examples - *multi_sink.ml, pretty_console.ml*
+- [x] Verify File sink examples - *file_logging.ml (247 lines)*
+- [x] Verify Rotating_File sink examples - *file_logging.ml*
+- [x] Verify Async_Sink examples - *perf_app.ml (317 lines)*
+- [x] Add Custom sink implementation example
+- [x] Create `examples/custom_sink.ml`
 
 ### 3.5 Formatter Examples Verification
-- [ ] Verify JSON formatter examples
-- [ ] Verify Logfmt formatter examples
-- [ ] Verify Pretty formatter examples
-- [ ] Add template formatter examples
-- [ ] Create `examples/custom_template.ml`
+- [x] Verify JSON formatter examples - *json_logging.ml*
+- [x] Verify Logfmt formatter examples - *logfmt_output.ml*
+- [x] Verify Pretty formatter examples - *pretty_console.ml, custom_formatter.ml*
+- [x] Add template formatter examples - *custom_formatter.ml*
+- [x] Create `examples/custom_template.ml` - *covered in custom_formatter.ml*
 
 ### 3.6 Eio Integration Examples Verification
-- [ ] Verify fiber-local context examples
-- [ ] Verify structured concurrency examples
-- [ ] Verify HTTP context extraction examples
-- [ ] Add switch lifecycle examples
-- [ ] Create `examples/eio_integration.ml`
+- [x] Verify fiber-local context examples - *context_propagation.ml*
+- [x] Verify structured concurrency examples - *web_service.ml*
+- [x] Verify HTTP context extraction examples - *context_propagation.ml, web_service.ml*
+- [x] Add switch lifecycle examples
+- [x] Create `examples/eio_integration.ml`
 
 ---
 
