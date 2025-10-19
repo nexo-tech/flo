@@ -41,3 +41,18 @@
  (name logfmt_output)
  (modules logfmt_output)
  (libraries flo eio_main))
+
+(executable
+ (name json_logging)
+ (modules json_logging)
+ (libraries flo eio_main))
+
+(executable
+ (name pretty_console)
+ (modules pretty_console)
+ (libraries flo eio_main str))
+
+(executable
+ (name multi_sink)
+ (modules multi_sink)
+ (libraries flo eio_main unix))

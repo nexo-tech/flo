@@ -74,31 +74,31 @@
 - [x] Demonstrate readability vs JSON
 
 ### 2.3 JSON Logging Examples
-- [ ] Create `examples/json_logging.ml`
-- [ ] Example: JSON to stdout for log aggregators
-- [ ] Example: JSON to file with pretty-printing option
-- [ ] Example: JSON with full OpenTelemetry structure
-- [ ] Example: JSON parsing and querying
-- [ ] Example: JSON with custom field serialization
-- [ ] Demonstrate integration with log analysis tools
+- [x] Create `examples/json_logging.ml`
+- [x] Example: JSON to stdout for log aggregators
+- [x] Example: JSON to file with pretty-printing option
+- [x] Example: JSON with full OpenTelemetry structure
+- [x] Example: JSON parsing and querying
+- [x] Example: JSON with custom field serialization
+- [x] Demonstrate integration with log analysis tools
 
 ### 2.4 Pretty Console Output Examples
-- [ ] Create `examples/pretty_console.ml`
-- [ ] Example: Colored console output (default)
-- [ ] Example: No-color mode for CI/CD
-- [ ] Example: Custom color schemes per severity
-- [ ] Example: Custom templates with placeholders
-- [ ] Example: Compact vs verbose pretty format
-- [ ] Example: Terminal detection and auto-formatting
+- [x] Create `examples/pretty_console.ml`
+- [x] Example: Colored console output (default)
+- [x] Example: No-color mode for CI/CD
+- [x] Example: Custom color schemes per severity
+- [x] Example: Custom templates with placeholders
+- [x] Example: Compact vs verbose pretty format
+- [x] Example: Terminal detection and auto-formatting
 
 ### 2.5 Multi-Sink Configuration Examples
-- [ ] Create `examples/multi_sink.ml`
-- [ ] Example: Console (pretty) + File (JSON) simultaneously
-- [ ] Example: Different log levels per sink
-- [ ] Example: Filtered sinks (errors-only file)
-- [ ] Example: Development vs production sink configs
-- [ ] Example: Dynamic sink addition/removal
-- [ ] Example: Sink performance comparison
+- [x] Create `examples/multi_sink.ml`
+- [x] Example: Console (pretty) + File (JSON) simultaneously
+- [x] Example: Different log levels per sink
+- [x] Example: Filtered sinks (errors-only file)
+- [x] Example: Development vs production sink configs
+- [x] Example: Dynamic sink addition/removal
+- [x] Example: Sink performance comparison
 
 ### 2.6 PPX Integration Examples
 - [ ] Create `examples/ppx_basic.ml` (location capture)
