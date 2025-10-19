@@ -7,14 +7,14 @@
 
 ## Features
 
-✨ **Zero Configuration** - Pre-configured singleton, works immediately
-🎨 **Beautiful Output** - Colored console logging inspired by Loguru
-📊 **Structured Logging** - Type-safe structured fields with GADTs
-🔗 **Distributed Tracing** - W3C Trace Context and OpenTelemetry compliance
-⚡ **Async Performance** - Non-blocking writes with background processing
-📁 **File Rotation** - Size and time-based rotation with retention policies
-🧵 **Fiber-Local Context** - Automatic context propagation with Eio
-🛡️ **Type Safety** - Compile-time guarantees throughout
+- ✨ **Zero Configuration** - Pre-configured singleton, works immediately
+- 🎨 **Beautiful Output** - Colored console logging inspired by Loguru
+- 📊 **Structured Logging** - Type-safe structured fields with GADTs
+- 🔗 **Distributed Tracing** - W3C Trace Context and OpenTelemetry compliance
+- ⚡ **Async Performance** - Non-blocking writes with background processing
+- 📁 **File Rotation** - Size and time-based rotation with retention policies
+- 🧵 **Fiber-Local Context** - Automatic context propagation with Eio
+- 🛡️ **Type Safety** - Compile-time guarantees throughout
 
 ## Quick Start
 
@@ -199,3 +199,4 @@ dune clean        # Clean build artifacts
 ## License
 
 MIT
+
