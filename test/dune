@@ -102,3 +102,9 @@
  (modules test_ppx_structured)
  (libraries flo alcotest)
  (preprocess (pps ppx_flo)))
+
+(test
+ (name test_ppx_span)
+ (modules test_ppx_span)
+ (libraries flo alcotest)
+ (preprocess (pps ppx_flo)))

@@ -27,12 +27,12 @@
 - [x] Write tests for structured syntax expansion
 
 ### 1.4 Span Annotation Extension
-- [ ] Implement `let%span "name" func = ...` syntax
-- [ ] Wrap function body in `Flo_structured.in_span`
-- [ ] Auto-capture function arguments as span attributes
-- [ ] Support async/promise-returning functions
-- [ ] Generate proper span lifecycle (start/end)
-- [ ] Write tests for span annotation expansion
+- [x] Implement `let%span "name" func = ...` syntax
+- [x] Wrap function body in `Flo_structured.in_span`
+- [x] Auto-capture function arguments as span attributes
+- [x] Support async/promise-returning functions
+- [x] Generate proper span lifecycle (start/end)
+- [x] Write tests for span annotation expansion
 
 ### 1.5 PPX Documentation & Examples
 - [ ] Create `examples/ppx_usage.ml` demonstrating all PPX features

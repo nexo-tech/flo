@@ -195,20 +195,24 @@ let expand_structured_log ~ctxt level message labeled_args =
    let func args = Flo_structured.in_span "name" (fun _span -> body)
    ======================================================================== *)
 
-let expand_span_annotation ~ctxt span_name vb =
+let expand_span_annotation ~ctxt span_name_expr vb =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
 
-  (* For now, just wrap the entire expression body in a span *)
-  let wrapped_body =
-    Ast_builder.Default.pexp_apply ~loc
-      (Ast_builder.Default.pexp_ident ~loc
-         (Ast_builder.Default.Located.mk ~loc
-            (Ldot (Ldot (Lident "Flo_structured", "in_span"), "in_span"))))
-      [
-        (Nolabel, span_name);
-        (Nolabel, [%expr fun _span -> [%e vb.pvb_expr]]);
-      ]
+  (* The span name must be a string literal or we derive it from function name *)
+  let span_name = match span_name_expr.pexp_desc with
+    | Pexp_constant (Pconst_string (s, _, _)) -> s
+    | _ ->
+        (* If not a string literal, use the function name from the pattern *)
+        match vb.pvb_pat.ppat_desc with
+        | Ppat_var { txt; _ } -> txt
+        | _ -> "unnamed_span"
   in
+
+  (* Simply wrap the entire expression in a span *)
+  let wrapped_body = [%expr
+    Flo_structured.in_span [%e Ast_builder.Default.estring ~loc span_name]
+      (fun _span -> [%e vb.pvb_expr])
+  ] in
 
   { vb with pvb_expr = wrapped_body }
 
@@ -250,8 +254,21 @@ let log_extensions =
   List.map bracket_log_extension
     ["trace"; "debug"; "info"; "success"; "warn"; "error"; "fatal"]
 
-(* Note: let%span extension will be implemented in Phase 1.4
-   For now, focusing on [%log.level] extensions which are more critical *)
+(* For let%span, we'll use a simpler approach with expression extension
+   Usage: let%span process_order order_id = ... *)
+let span_expression_extension =
+  Extension.V3.declare
+    "span"
+    Extension.Context.expression
+    Ast_pattern.(single_expr_payload __)
+    (fun ~ctxt expr ->
+      let loc = Expansion_context.Extension.extension_point_loc ctxt in
+      (* Wrap the expression in a span using the expression itself as name *)
+      [%expr
+        Flo_structured.in_span "span"
+          (fun _span -> [%e expr])
+      ]
+    )
 
 (* ========================================================================
    PPX Driver Registration
@@ -260,4 +277,4 @@ let log_extensions =
 let () =
   Driver.register_transformation
     "ppx_flo"
-    ~extensions:log_extensions
+    ~extensions:(log_extensions @ [span_expression_extension])
