@@ -47,8 +47,12 @@ let errorf fmt = Printf.ksprintf error fmt
 let fatalf fmt = Printf.ksprintf fatal fmt
 
 (* Structured logging *)
-let info_fields message ~fields =
-  let record = Record.make ~severity:Severity.Info ~message in
+let log_fields ?location severity message ~fields =
+  let record = Record.make ~severity ~message in
+  let record = match location with
+    | Some loc -> Record.with_location loc record
+    | None -> record
+  in
   let record = Record.with_attributes fields record in
   let record = match Flo_context.get_current () with
     | Some ctx ->
@@ -57,6 +61,27 @@ let info_fields message ~fields =
     | None -> record
   in
   dispatch_record record
+
+let trace_fields ?location message ~fields =
+  log_fields ?location Severity.Trace message ~fields
+
+let debug_fields ?location message ~fields =
+  log_fields ?location Severity.Debug message ~fields
+
+let info_fields ?location message ~fields =
+  log_fields ?location Severity.Info message ~fields
+
+let success_fields ?location message ~fields =
+  log_fields ?location Severity.Success message ~fields
+
+let warn_fields ?location message ~fields =
+  log_fields ?location Severity.Warn message ~fields
+
+let error_fields ?location message ~fields =
+  log_fields ?location Severity.Error message ~fields
+
+let fatal_fields ?location message ~fields =
+  log_fields ?location Severity.Fatal message ~fields
 
 (* Common field shortcuts - OpenTelemetry semantic conventions *)
 let http_method method_ = ("http.method", Value.string method_)

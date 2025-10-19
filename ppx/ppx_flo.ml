@@ -52,23 +52,74 @@ let location_expr ~loc =
   ]
 
 (* Convert OCaml expression to Value.t based on type inference *)
-let value_of_expr ~loc expr =
+let rec value_of_expr ~loc expr =
   match expr.pexp_desc with
+  (* String literals *)
   | Pexp_constant (Pconst_string (s, _, _)) ->
       [%expr Value.String [%e Ast_builder.Default.estring ~loc s]]
+
+  (* Integer literals *)
   | Pexp_constant (Pconst_integer (i, _)) ->
       [%expr Value.Int (Int64.of_int [%e Ast_builder.Default.eint ~loc (int_of_string i)])]
+
+  (* Float literals *)
   | Pexp_constant (Pconst_float (f, _)) ->
       [%expr Value.Float [%e Ast_builder.Default.efloat ~loc f]]
+
+  (* Boolean true *)
   | Pexp_construct ({ txt = Lident "true"; _ }, _) ->
       [%expr Value.Bool true]
+
+  (* Boolean false *)
   | Pexp_construct ({ txt = Lident "false"; _ }, _) ->
       [%expr Value.Bool false]
+
+  (* Empty list [] *)
   | Pexp_construct ({ txt = Lident "[]"; _ }, _) ->
       [%expr Value.Array []]
-  | _ ->
-      (* For complex expressions, wrap in a runtime conversion *)
+
+  (* List with elements [a; b; c] *)
+  | Pexp_construct ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple [hd; tl]; _ }) ->
+      (* Build list recursively *)
+      let hd_value = value_of_expr ~loc:hd.pexp_loc hd in
+      let tl_value = value_of_expr ~loc:tl.pexp_loc tl in
+      [%expr
+        match [%e tl_value] with
+        | Value.Array arr -> Value.Array ([%e hd_value] :: arr)
+        | _ -> Value.Array [[%e hd_value]]
+      ]
+
+  (* List literal using [...] syntax *)
+  | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident "::"; _ }; _ }, _) ->
+      (* This handles explicit list construction *)
       expr
+
+  (* Tuple (converts to Object with numeric keys) *)
+  | Pexp_tuple elements ->
+      let indexed_elements = List.mapi (fun i elem ->
+        let key = string_of_int i in
+        let value = value_of_expr ~loc:elem.pexp_loc elem in
+        [%expr ([%e Ast_builder.Default.estring ~loc key], [%e value])]
+      ) elements in
+      let obj_list = Ast_builder.Default.elist ~loc indexed_elements in
+      [%expr Value.Object [%e obj_list]]
+
+  (* Record literals {field1 = value1; field2 = value2} *)
+  | Pexp_record (fields, _) ->
+      let field_exprs = List.map (fun (field_lid, field_expr) ->
+        let field_name = match field_lid.txt with
+          | Lident name -> name
+          | Ldot (_, name) -> name
+          | Lapply _ -> "unknown"
+        in
+        let value = value_of_expr ~loc:field_expr.pexp_loc field_expr in
+        [%expr ([%e Ast_builder.Default.estring ~loc field_name], [%e value])]
+      ) fields in
+      let obj_list = Ast_builder.Default.elist ~loc field_exprs in
+      [%expr Value.Object [%e obj_list]]
+
+  (* All other cases - pass through unchanged for runtime evaluation *)
+  | _ -> expr
 
 (* ========================================================================
    Feature 1: Automatic Location Capture
@@ -102,6 +153,7 @@ let expand_let_log_extension level ~ctxt expr =
 
 let expand_structured_log ~ctxt level message labeled_args =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let code_path = Expansion_context.Extension.code_path ctxt in
 
   (* Convert labeled arguments to field list *)
   let fields =
@@ -122,13 +174,17 @@ let expand_structured_log ~ctxt level message labeled_args =
     Ast_builder.Default.elist ~loc fields
   in
 
-  (* Build the call to Flo.<level>_fields *)
+  (* Build location expression *)
+  let loc_expr = location_expr_full ~loc code_path in
+
+  (* Build the call to Flo.<level>_fields with location *)
   let func_name = level ^ "_fields" in
   let func_ident =
     Ast_builder.Default.pexp_ident ~loc
       (Ast_builder.Default.Located.mk ~loc (Ldot (Lident "Flo", func_name)))
   in
   Ast_builder.Default.pexp_apply ~loc func_ident [
+    (Labelled "location", loc_expr);
     (Nolabel, message);
     (Labelled "fields", fields_list)
   ]

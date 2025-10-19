@@ -96,3 +96,9 @@
  (modules test_ppx_location)
  (libraries flo alcotest)
  (preprocess (pps ppx_flo)))
+
+(test
+ (name test_ppx_structured)
+ (modules test_ppx_structured)
+ (libraries flo alcotest)
+ (preprocess (pps ppx_flo)))

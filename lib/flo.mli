@@ -49,12 +49,20 @@ val fatalf : ('a, unit, string, unit) format4 -> 'a
 
 (** {1 Structured Logging} *)
 
-(** Log message with structured fields.
+(** Log message with structured fields at various severity levels.
 
+    @param location Optional source location
     @param message The log message
     @param fields Structured key-value pairs
 *)
-val info_fields : string -> fields:(string * Value.t) list -> unit
+
+val trace_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val debug_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val info_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val success_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val warn_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val error_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val fatal_fields : ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
 
 (** {1 Common Field Shortcuts} *)
 

@@ -19,12 +19,12 @@
 - [x] Write tests for location capture expansion
 
 ### 1.3 Structured Logging Syntax Extension
-- [ ] Implement `[%log.info "msg" ~field1:value1 ~field2:value2]` syntax
-- [ ] Auto-convert labeled arguments to structured fields
-- [ ] Support type inference for fields (String, Int, Float, Bool)
-- [ ] Generate proper `Value.t` constructors
-- [ ] Handle nested objects and arrays
-- [ ] Write tests for structured syntax expansion
+- [x] Implement `[%log.info "msg" ~field1:value1 ~field2:value2]` syntax
+- [x] Auto-convert labeled arguments to structured fields
+- [x] Support type inference for fields (String, Int, Float, Bool)
+- [x] Generate proper `Value.t` constructors
+- [x] Handle nested objects and arrays
+- [x] Write tests for structured syntax expansion
 
 ### 1.4 Span Annotation Extension
 - [ ] Implement `let%span "name" func = ...` syntax
