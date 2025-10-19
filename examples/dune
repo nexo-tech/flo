@@ -56,3 +56,8 @@
  (name multi_sink)
  (modules multi_sink)
  (libraries flo eio_main unix))
+
+(executable
+ (name context_propagation)
+ (modules context_propagation)
+ (libraries flo eio_main))

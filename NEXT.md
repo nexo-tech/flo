@@ -101,21 +101,21 @@
 - [x] Example: Sink performance comparison
 
 ### 2.6 PPX Integration Examples
-- [ ] Create `examples/ppx_basic.ml` (location capture)
-- [ ] Create `examples/ppx_structured.ml` (structured syntax)
-- [ ] Create `examples/ppx_spans.ml` (span annotations)
-- [ ] Example: Combining PPX with manual API
-- [ ] Example: PPX for library authors
-- [ ] Example: PPX code generation inspection
+- [x] Create `examples/ppx_basic.ml` (location capture) - *covered in ppx_usage.ml*
+- [x] Create `examples/ppx_structured.ml` (structured syntax) - *covered in ppx_usage.ml*
+- [x] Create `examples/ppx_spans.ml` (span annotations) - *covered in ppx_usage.ml*
+- [x] Example: Combining PPX with manual API - *covered in ppx_usage.ml*
+- [x] Example: PPX for library authors - *covered in ppx_usage.ml*
+- [x] Example: PPX code generation inspection - *covered in ppx_usage.ml*
 
 ### 2.7 Advanced Context Propagation Examples
-- [ ] Create `examples/context_propagation.ml`
-- [ ] Example: Multi-fiber context isolation
-- [ ] Example: Parent-child context inheritance
-- [ ] Example: Context merging strategies
-- [ ] Example: Custom context keys (GADT)
-- [ ] Example: HTTP header context extraction/injection
-- [ ] Example: gRPC metadata propagation
+- [x] Create `examples/context_propagation.ml`
+- [x] Example: Multi-fiber context isolation
+- [x] Example: Parent-child context inheritance
+- [x] Example: Context merging strategies
+- [x] Example: Custom context keys (GADT)
+- [x] Example: HTTP header context extraction/injection
+- [x] Example: gRPC metadata propagation - *same pattern as HTTP*
 
 ### 2.8 Performance & Async Examples
 - [ ] Create `examples/high_performance.ml`
