@@ -6,12 +6,14 @@ This tutorial walks through common logging patterns and best practices for using
 
 1. [Getting Started](#getting-started)
 2. [Basic Logging](#basic-logging)
-3. [Structured Logging](#structured-logging)
-4. [Context Propagation](#context-propagation)
-5. [File Logging](#file-logging)
-6. [High-Performance Logging](#high-performance-logging)
-7. [Distributed Tracing](#distributed-tracing)
-8. [Production Patterns](#production-patterns)
+3. [PPX Extensions](#ppx-extensions) ⭐ NEW
+4. [Structured Logging](#structured-logging)
+5. [Context Propagation](#context-propagation)
+6. [File Logging](#file-logging)
+7. [High-Performance Logging](#high-performance-logging)
+8. [Distributed Tracing](#distributed-tracing)
+9. [Testing Best Practices](#testing-best-practices) ⭐ NEW
+10. [Production Patterns](#production-patterns)
 
 ## Getting Started
 
@@ -80,6 +82,82 @@ set_level Severity.Debug;  (* Show Debug and above *)
 enable "MyModule";
 disable "VerboseModule";
 ```
+
+## PPX Extensions
+
+### Why Use PPX?
+
+The `ppx_flo` preprocessor makes logging more ergonomic:
+- **Automatic location capture** - No manual file:line tracking
+- **Variable support** - Use variables directly in structured logs
+- **Less boilerplate** - Cleaner, more readable code
+
+### Setup
+
+Add preprocessing to your `dune` file:
+
+```lisp
+(executable
+ (name my_app)
+ (libraries flo eio_main)
+ (preprocess (pps ppx_flo)))
+```
+
+### Location Capture
+
+Without PPX:
+```ocaml
+(* Manual location - tedious *)
+let loc = Location.make_full ~file:__FILE__ ~line:42 ~module_name:"My_app" () in
+info ~location:loc "User action"
+```
+
+With PPX:
+```ocaml
+(* Automatic - much easier! *)
+[%log.info "User action"]
+```
+
+The PPX automatically captures file, line, column, and module name.
+
+### Structured Logging with Variables
+
+Without PPX:
+```ocaml
+let user_id = get_user_id () in
+let count = compute_count () in
+info_fields "Task complete" ~fields:[
+  ("user_id", Value.String user_id);
+  ("count", Value.Int (Int64.of_int count));
+]
+```
+
+With PPX:
+```ocaml
+let user_id = get_user_id () in
+let count = compute_count () in
+[%log.info "Task complete" ~user_id ~count]
+```
+
+Variables are automatically converted to the correct Value.t type!
+
+### Span Annotations
+
+```ocaml
+let process_order order_id = [%span
+  begin
+    [%log.info "Processing" ~order_id];
+    validate_order order_id;
+    charge_payment order_id;
+    [%log.success "Order complete" ~order_id];
+    Ok ()
+  end
+]
+```
+
+Automatically wraps code in a distributed tracing span.
+
+**See [PPX_GUIDE.md](PPX_GUIDE.md) and [examples/ppx_usage.ml](examples/ppx_usage.ml) for more.**
 
 ## Structured Logging
 
@@ -383,6 +461,62 @@ Flo_structured.in_span "web_request" (fun parent_span ->
 )
 (* Automatic duration logging for all spans *)
 ```
+
+## Testing Best Practices
+
+### In-Memory Test Sink
+
+```ocaml
+(* Create a test sink to capture logs *)
+let captured_logs = ref [] in
+
+let test_sink record =
+  captured_logs := record :: !captured_logs
+in
+
+(* Your function under test *)
+let my_function user_id =
+  let r = Record.make ~severity:Severity.Info ~message:"User action" in
+  let r = Record.with_attributes [("user_id", Value.String user_id)] r in
+  test_sink r
+in
+
+(* Run test *)
+my_function "alice";
+
+(* Assert *)
+let logs = List.rev !captured_logs in
+assert (List.length logs = 1);
+assert (List.hd logs).Record.message = "User action")
+```
+
+### Testing Structured Fields
+
+```ocaml
+let record = List.hd captured_logs in
+match List.assoc_opt "user_id" record.Record.attributes with
+| Some (Value.String uid) ->
+    assert (uid = "alice")
+| _ ->
+    failwith "user_id not found or wrong type"
+```
+
+### Testing with Alcotest
+
+```ocaml
+let test_logging () =
+  let logs = ref [] in
+
+  (* Test your logging code *)
+  ...
+
+  (* Assertions *)
+  Alcotest.(check int) "log count" 3 (List.length !logs);
+  Alcotest.(check bool) "has error"
+    true (List.exists (fun r -> r.Record.severity = Severity.Error) !logs)
+```
+
+**See [examples/testing_with_flo.ml](examples/testing_with_flo.ml) for complete patterns.**
 
 ## Production Patterns
 

@@ -15,6 +15,8 @@
 - 📁 **File Rotation** - Size and time-based rotation with retention policies
 - 🧵 **Fiber-Local Context** - Automatic context propagation with Eio
 - 🛡️ **Type Safety** - Compile-time guarantees throughout
+- 🔧 **PPX Extensions** - Automatic location capture and ergonomic syntax
+- 🎯 **Variable Support** - PPX works with both literals and variables
 
 ## Quick Start
 
@@ -38,6 +40,16 @@ let () =
 
 ```bash
 opam install flo
+opam install ppx_flo  # Optional: PPX extensions
+```
+
+Add to your `dune` file:
+
+```lisp
+(executable
+ (name my_app)
+ (libraries flo eio_main)
+ (preprocess (pps ppx_flo)))  ; Optional: Enable PPX
 ```
 
 Or add to your `dune-project`:
@@ -45,6 +57,7 @@ Or add to your `dune-project`:
 ```lisp
 (depends
   (flo (>= 0.1.0))
+  (ppx_flo (>= 0.1.0))  ; Optional
   (eio (>= 1.0))
   (eio_main (>= 1.0)))
 ```
@@ -140,6 +153,42 @@ done;
 
 Flo_sink_async.drain async_sink  (* Ensure all written *)
 ```
+
+## PPX Extensions
+
+The `ppx_flo` preprocessor provides ergonomic syntax extensions:
+
+### Automatic Location Capture
+
+```ocaml
+[%log.info "User logged in"]
+(* Expands to: *)
+Flo.info ~location:(Location.make_full ~file:"app.ml" ~line:42 ...) "User logged in"
+```
+
+### Structured Logging with Variables
+
+```ocaml
+let user_id = get_user_id () in
+let count = process_items () in
+
+[%log.info "Processing complete" ~user_id ~count]
+(* Variables automatically converted to Value.t! *)
+```
+
+### Span Annotations
+
+```ocaml
+let result = [%span
+  begin
+    [%log.info "Computing result"];
+    expensive_computation ()
+  end
+]
+(* Automatically wraps in distributed tracing span *)
+```
+
+**See [PPX_GUIDE.md](PPX_GUIDE.md) for complete documentation.**
 
 ## Modules
 
