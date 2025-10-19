@@ -171,15 +171,6 @@ dune exec examples/web_service.exe          # Distributed tracing
 - [DESIGN.md](DESIGN.md) - Architecture details
 - [PLAN.md](PLAN.md) - Implementation roadmap
 
-## Implementation Status
-
-✅ **Phase 1:** Core Foundation
-✅ **Phase 2:** Structured Logging
-✅ **Phase 3:** File Sinks & Rotation
-✅ **Phase 4:** Async Sinks & Performance
-✅ **Phase 5:** Distributed Tracing Integration
-🚧 **Phase 6:** Polish & Documentation (in progress)
-
 ## Requirements
 
 - OCaml >= 5.1.0
