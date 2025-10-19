@@ -25,3 +25,9 @@
  (name web_service)
  (modules web_service)
  (libraries flo eio_main unix))
+
+(executable
+ (name ppx_usage)
+ (modules ppx_usage)
+ (libraries flo eio_main)
+ (preprocess (pps ppx_flo)))

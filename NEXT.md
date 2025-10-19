@@ -35,18 +35,18 @@
 - [x] Write tests for span annotation expansion
 
 ### 1.5 PPX Documentation & Examples
-- [ ] Create `examples/ppx_usage.ml` demonstrating all PPX features
-- [ ] Document PPX extensions in README
-- [ ] Add inline documentation to PPX code
-- [ ] Create troubleshooting guide for PPX compilation issues
+- [x] Create `examples/ppx_usage.ml` demonstrating all PPX features
+- [x] Document PPX extensions in README
+- [x] Add inline documentation to PPX code
+- [x] Create troubleshooting guide for PPX compilation issues
 
 ### 1.6 PPX Integration Testing
-- [ ] Test PPX with simple logging calls
-- [ ] Test PPX with structured logging
-- [ ] Test PPX with span annotations
-- [ ] Test PPX interaction with existing API
-- [ ] Ensure no runtime performance degradation
-- [ ] Test compilation error messages are helpful
+- [x] Test PPX with simple logging calls
+- [x] Test PPX with structured logging
+- [x] Test PPX with span annotations
+- [x] Test PPX interaction with existing API
+- [x] Ensure no runtime performance degradation
+- [x] Test compilation error messages are helpful
 
 ---
 
