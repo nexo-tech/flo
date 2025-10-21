@@ -39,6 +39,10 @@ type t = {
 
   event_name : string option;
       (** Name of the event (e.g., "user.login", "order.created") *)
+
+  namespace : string option;
+      (** Namespace for hierarchical log filtering (e.g., "mylib.database").
+          If None, uses the root namespace. *)
 }
 
 (** {1 Construction} *)
@@ -116,6 +120,21 @@ val with_event_name : string -> t -> t
     @return Updated record
 *)
 val with_observed_timestamp : Ptime.t -> t -> t
+
+(** Add namespace to a record.
+
+    @param namespace The namespace (e.g., "mylib.database")
+    @param record The log record
+    @return Updated record
+*)
+val with_namespace : string -> t -> t
+
+(** Get namespace from a record.
+
+    @param record The log record
+    @return Some namespace if set, None for root namespace
+*)
+val namespace : t -> string option
 
 (** {1 Utilities} *)
 

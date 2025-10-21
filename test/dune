@@ -124,3 +124,8 @@
  (name test_integration_advanced)
  (modules test_integration_advanced)
  (libraries flo alcotest eio_main unix))
+
+(test
+ (name test_namespace)
+ (modules test_namespace)
+ (libraries flo alcotest eio_main))

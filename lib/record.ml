@@ -8,6 +8,7 @@ type t = {
   attributes : (string * Value.t) list;
   body : Value.t option;
   event_name : string option;
+  namespace : string option;
 }
 
 (* Get current time *)
@@ -27,6 +28,7 @@ let make ~severity ~message = {
   attributes = [];
   body = None;
   event_name = None;
+  namespace = None;
 }
 
 let make_with_timestamp ~timestamp ~severity ~message = {
@@ -39,6 +41,7 @@ let make_with_timestamp ~timestamp ~severity ~message = {
   attributes = [];
   body = None;
   event_name = None;
+  namespace = None;
 }
 
 (* Builder pattern helpers *)
@@ -59,6 +62,12 @@ let with_event_name event_name record =
 
 let with_observed_timestamp observed_timestamp record =
   { record with observed_timestamp = Some observed_timestamp }
+
+let with_namespace namespace record =
+  { record with namespace = Some namespace }
+
+let namespace record =
+  record.namespace
 
 (* Utilities *)
 let get_timestamp record =
@@ -91,5 +100,9 @@ let to_string record =
     | Some name -> Printf.sprintf " event=%s" name
     | None -> ""
   in
-  Printf.sprintf "[%s] %s%s: %s%s%s%s"
-    ts severity_str loc_str record.message trace_str event_str attrs_str
+  let namespace_str = match record.namespace with
+    | Some ns -> Printf.sprintf " [%s]" ns
+    | None -> ""
+  in
+  Printf.sprintf "[%s] %s%s%s: %s%s%s%s"
+    ts severity_str namespace_str loc_str record.message trace_str event_str attrs_str
