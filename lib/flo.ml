@@ -1,10 +1,42 @@
-(* Global logger state - simplified for Phase 1 *)
+(* Global logger state *)
 let global_level = ref Severity.Info
+
+(* Cache for effective namespace levels to improve performance *)
+(* Key: namespace string, Value: effective level *)
+let level_cache : (string, Severity.t) Hashtbl.t = Hashtbl.create 32
+let cache_mutex = Eio.Mutex.create ()
+
+(* Get effective level for namespace with caching *)
+let get_effective_level_cached namespace =
+  let ns = match namespace with Some s -> s | None -> "" in
+  (* Try cache first *)
+  let cached = Eio.Mutex.use_rw ~protect:true cache_mutex (fun () ->
+    Hashtbl.find_opt level_cache ns
+  ) in
+  match cached with
+  | Some level -> level
+  | None ->
+      (* Not in cache, compute and cache it *)
+      let effective_level = Flo_namespace.get_effective_level
+        ~namespace:ns ~root_level:!global_level in
+      Eio.Mutex.use_rw ~protect:true cache_mutex (fun () ->
+        Hashtbl.replace level_cache ns effective_level
+      );
+      effective_level
+
+(* Clear the level cache (call when global or namespace levels change) *)
+let clear_level_cache () =
+  Eio.Mutex.use_rw ~protect:true cache_mutex (fun () ->
+    Hashtbl.clear level_cache
+  )
 
 (* Dispatch record to console *)
 let dispatch_record record =
-  (* Check global level first *)
-  if Severity.compare record.Record.severity !global_level >= 0 then
+  (* Get effective level for the record's namespace *)
+  let effective_level = get_effective_level_cached record.Record.namespace in
+
+  (* Check if record's severity meets the effective level *)
+  if Severity.compare record.Record.severity effective_level >= 0 then
     (* For Phase 1, write directly to stderr using the formatter *)
     (* Note: This is not thread-safe. Proper implementation will use
        Eio.Mutex or other synchronization in later phases *)
@@ -166,10 +198,29 @@ let exception_ exn =
 
 (* Configuration *)
 let set_level level =
-  global_level := level
+  global_level := level;
+  clear_level_cache ()
 
 let get_level () =
   !global_level
+
+(* Namespace configuration *)
+let set_level_for namespace level =
+  Flo_namespace.set_level namespace level;
+  clear_level_cache ()
+
+let get_level_for namespace =
+  Flo_namespace.get_level namespace
+
+let get_effective_level namespace =
+  Flo_namespace.get_effective_level ~namespace ~root_level:!global_level
+
+let clear_level_for namespace =
+  Flo_namespace.clear_level namespace;
+  clear_level_cache ()
+
+let get_all_levels () =
+  Flo_namespace.get_all_levels ()
 
 (* Module re-exports for convenience *)
 module Severity = Severity
@@ -179,6 +230,7 @@ module Trace_context = Trace_context
 module Record = Record
 module Flo_core = Flo_core
 module Flo_context = Flo_context
+module Flo_namespace = Flo_namespace
 module Flo_format_pretty = Flo_format_pretty
 module Flo_format_json = Flo_format_json
 module Flo_format_logfmt = Flo_format_logfmt

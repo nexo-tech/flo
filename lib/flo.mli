@@ -176,6 +176,69 @@ val set_level : Severity.t -> unit
 *)
 val get_level : unit -> Severity.t
 
+(** {1 Namespace Configuration} *)
+
+(** Set minimum log level for a specific namespace.
+
+    When a log is emitted with namespace "a.b.c", the effective level
+    is determined by searching in order:
+    1. Exact match: "a.b.c"
+    2. Parent namespaces: "a.b", then "a"
+    3. Root: "" (set via set_level)
+
+    Example:
+    {[
+      (* Set level for a specific library component *)
+      Flo.set_level_for "mylib.database" Debug;
+      Flo.set_level_for "mylib.cache" Warn;
+
+      (* Records with namespace "mylib.database.pool" will use Debug level *)
+      (* Records with namespace "mylib.cache" will use Warn level *)
+    ]}
+
+    @param namespace Dotted namespace (e.g., "mylib.database")
+    @param level Minimum severity level
+*)
+val set_level_for : string -> Severity.t -> unit
+
+(** Get configured level for a specific namespace.
+
+    Returns None if no level is explicitly set for this exact namespace.
+    Use {!get_effective_level} to get the level including parent lookup.
+
+    @param namespace The namespace to query
+    @return Some level if explicitly configured, None otherwise
+*)
+val get_level_for : string -> Severity.t option
+
+(** Get effective level for a namespace (includes hierarchy lookup).
+
+    This resolves the actual level after checking the namespace hierarchy.
+    Searches from most specific to least specific namespace, then uses
+    the root level if no match is found.
+
+    @param namespace The namespace to query
+    @return The effective level (never None)
+*)
+val get_effective_level : string -> Severity.t
+
+(** Clear level for a namespace.
+
+    After clearing, the namespace will use parent or root level.
+
+    @param namespace The namespace to clear
+*)
+val clear_level_for : string -> unit
+
+(** List all configured namespace levels.
+
+    Returns all explicitly configured namespaces and their levels.
+    Does not include the root level or inherited levels.
+
+    @return List of (namespace, level) pairs
+*)
+val get_all_levels : unit -> (string * Severity.t) list
+
 (** {1 Module Re-exports} *)
 
 (** Re-export modules for convenience *)
@@ -187,6 +250,7 @@ module Trace_context = Trace_context
 module Record = Record
 module Flo_core = Flo_core
 module Flo_context = Flo_context
+module Flo_namespace = Flo_namespace
 module Flo_format_pretty = Flo_format_pretty
 module Flo_format_json = Flo_format_json
 module Flo_format_logfmt = Flo_format_logfmt

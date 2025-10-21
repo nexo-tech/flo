@@ -300,27 +300,30 @@ val namespace : t -> string option
   - Implement `Record.namespace`
   - Update record constructors
 
-- [ ] **1.3. Update Dispatch Logic**
+- [x] **1.3. Update Dispatch Logic**
   - Modify `Flo.dispatch_record` to check namespace level
   - Implement hierarchical level resolution
   - Add namespace to formatted output
   - Performance: cache effective levels
 
-- [ ] **1.4. Basic Configuration API**
+- [x] **1.4. Basic Configuration API**
   - Implement `Flo.set_level_for`
   - Implement `Flo.get_level_for`
   - Implement `Flo.get_effective_level`
   - Implement `Flo.clear_level_for`
   - Implement `Flo.get_all_levels`
 
-- [ ] **1.5. Unit Tests**
+- [x] **1.5. Unit Tests**
   - Test hierarchical level lookup
   - Test namespace configuration
   - Test level inheritance (parent → child)
   - Test edge cases (empty namespace, deep nesting)
+  - Test dispatch filtering with namespaces
+  - Test cache invalidation
+  - Test formatter output
   - Add to `test/test_namespace.ml`
 
-- [ ] **Commit**: Phase 1 complete - Core namespace infrastructure
+- [x] **Commit**: Phase 1 complete - Core namespace infrastructure
 
 ---
 

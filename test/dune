@@ -128,4 +128,4 @@
 (test
  (name test_namespace)
  (modules test_namespace)
- (libraries flo alcotest eio_main))
+ (libraries flo alcotest eio_main str))

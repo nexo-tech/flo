@@ -291,6 +291,111 @@ let test_edge_cases () =
 
     Flo_namespace.clear_all ()
 
+(** Test namespace-based filtering in dispatch *)
+let test_namespace_filtering () =
+  Eio_main.run @@ fun _env ->
+    (* Set up different levels for different namespaces *)
+    Flo.set_level Severity.Info;  (* Root level *)
+    Flo.set_level_for "mylib.database" Severity.Debug;
+    Flo.set_level_for "mylib.cache" Severity.Warn;
+
+    (* Test that get_effective_level works through Flo API *)
+    let level1 = Flo.get_effective_level "mylib.database" in
+    Alcotest.(check Severity.testable)
+      "effective level for mylib.database" Severity.Debug level1;
+
+    let level2 = Flo.get_effective_level "mylib.cache" in
+    Alcotest.(check Severity.testable)
+      "effective level for mylib.cache" Severity.Warn level2;
+
+    let level3 = Flo.get_effective_level "other" in
+    Alcotest.(check Severity.testable)
+      "effective level for other (uses root)" Severity.Info level3;
+
+    (* Test hierarchical inheritance *)
+    let level4 = Flo.get_effective_level "mylib.database.pool" in
+    Alcotest.(check Severity.testable)
+      "child inherits from mylib.database" Severity.Debug level4;
+
+    (* Clean up *)
+    Flo_namespace.clear_all ()
+
+(** Test that set_level clears cache *)
+let test_level_cache_invalidation () =
+  Eio_main.run @@ fun _env ->
+    Flo_namespace.clear_all ();
+
+    (* Set initial level *)
+    Flo.set_level Severity.Info;
+    let level1 = Flo.get_effective_level "test.namespace" in
+    Alcotest.(check Severity.testable)
+      "initial level" Severity.Info level1;
+
+    (* Change global level - should invalidate cache *)
+    Flo.set_level Severity.Debug;
+    let level2 = Flo.get_effective_level "test.namespace" in
+    Alcotest.(check Severity.testable)
+      "level after global change" Severity.Debug level2;
+
+    (* Set namespace level - should invalidate cache *)
+    Flo.set_level_for "test" Severity.Warn;
+    let level3 = Flo.get_effective_level "test.namespace" in
+    Alcotest.(check Severity.testable)
+      "level after namespace change" Severity.Warn level3;
+
+    (* Clear namespace level - should invalidate cache *)
+    Flo.clear_level_for "test";
+    let level4 = Flo.get_effective_level "test.namespace" in
+    Alcotest.(check Severity.testable)
+      "level after clear" Severity.Debug level4;
+
+    Flo_namespace.clear_all ()
+
+(** Test Flo.get_all_levels API *)
+let test_flo_get_all_levels () =
+  Eio_main.run @@ fun _env ->
+    Flo_namespace.clear_all ();
+
+    (* Set some levels via Flo API *)
+    Flo.set_level_for "ns1" Severity.Debug;
+    Flo.set_level_for "ns2" Severity.Info;
+    Flo.set_level_for "ns3" Severity.Warn;
+
+    let all_levels = Flo.get_all_levels () in
+    Alcotest.(check int) "has 3 namespaces" 3 (List.length all_levels);
+
+    (* Check they're all present *)
+    let has_ns1 = List.exists (fun (ns, _) -> ns = "ns1") all_levels in
+    let has_ns2 = List.exists (fun (ns, _) -> ns = "ns2") all_levels in
+    let has_ns3 = List.exists (fun (ns, _) -> ns = "ns3") all_levels in
+    Alcotest.(check bool) "has ns1" true has_ns1;
+    Alcotest.(check bool) "has ns2" true has_ns2;
+    Alcotest.(check bool) "has ns3" true has_ns3;
+
+    Flo_namespace.clear_all ()
+
+(** Test pretty formatter displays namespace *)
+let test_pretty_format_with_namespace () =
+  Eio_main.run @@ fun _env ->
+    let r1 = Record.make ~severity:Severity.Info ~message:"test message" in
+    let r2 = Record.with_namespace "mylib.component" r1 in
+
+    let formatted = Flo_format_pretty.format r2 in
+
+    (* Should contain the namespace *)
+    let has_namespace = String.length formatted > 0 &&
+                       (try ignore (String.index formatted '['); true with Not_found -> false) in
+    Alcotest.(check bool) "formatted output has bracket" true has_namespace;
+
+    (* Should contain "mylib.component" *)
+    let contains_namespace =
+      try
+        ignore (Str.search_forward (Str.regexp "mylib\\.component") formatted 0);
+        true
+      with Not_found -> false
+    in
+    Alcotest.(check bool) "contains namespace text" true contains_namespace
+
 (** Test suite *)
 let () =
   Alcotest.run "Flo_namespace" [
@@ -315,5 +420,13 @@ let () =
     ];
     "edge_cases", [
       Alcotest.test_case "edge_cases" `Quick test_edge_cases;
+    ];
+    "filtering", [
+      Alcotest.test_case "namespace_filtering" `Quick test_namespace_filtering;
+      Alcotest.test_case "level_cache_invalidation" `Quick test_level_cache_invalidation;
+      Alcotest.test_case "flo_get_all_levels" `Quick test_flo_get_all_levels;
+    ];
+    "formatting", [
+      Alcotest.test_case "pretty_format_with_namespace" `Quick test_pretty_format_with_namespace;
     ];
   ]

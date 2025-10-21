@@ -82,6 +82,13 @@ let format_span_context ctx =
 let format_event_name name =
   Printf.sprintf " event=%s" name
 
+(* Format namespace *)
+let format_namespace_colored namespace =
+  Printf.sprintf "%s[%s]%s" magenta namespace reset
+
+let format_namespace_plain namespace =
+  Printf.sprintf "[%s]" namespace
+
 (* Main formatter implementation *)
 let make_formatter colorize =
   let module F = struct
@@ -92,6 +99,14 @@ let make_formatter colorize =
           format_severity_colored record.severity
         else
           format_severity_plain record.severity
+      in
+      let namespace_str = match record.namespace with
+        | Some ns ->
+            if colorize then
+              " " ^ format_namespace_colored ns
+            else
+              " " ^ format_namespace_plain ns
+        | None -> ""
       in
       let loc_str = match record.location with
         | Some loc -> format_location loc
@@ -107,9 +122,9 @@ let make_formatter colorize =
         | None -> ""
       in
 
-      (* Format: [TIMESTAMP] [LEVEL] message (location) event=... {attrs...} trace_id=... *)
-      Printf.sprintf "[%s] [%s] %s%s%s%s%s"
-        ts_str severity_str record.message loc_str event_str attrs_str trace_str
+      (* Format: [TIMESTAMP] [LEVEL] [namespace] message (location) event=... {attrs...} trace_id=... *)
+      Printf.sprintf "[%s] [%s]%s %s%s%s%s%s"
+        ts_str severity_str namespace_str record.message loc_str event_str attrs_str trace_str
 
     let parse _s =
       Error "Parsing is not supported for pretty format (lossy format)"
