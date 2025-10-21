@@ -424,23 +424,23 @@ val namespace : t -> string option
   - Add `namespace=` to logfmt output
   - Test in `test/test_flo_format_logfmt.ml`
 
-- [ ] **4.4. Update Console Sink**
+- [x] **4.4. Update Console Sink**
   - Ensure namespace filtering works
   - Test namespace display
 
-- [ ] **4.5. Update File Sink**
+- [x] **4.5. Update File Sink**
   - Namespace in file output
   - Optional namespace-based file rotation
 
-- [ ] **4.6. Update Async Sink**
+- [x] **4.6. Update Async Sink**
   - Namespace preserved in async writes
 
-- [ ] **4.7. Integration Tests**
+- [x] **4.7. Integration Tests**
   - Test namespaces with all formatters
   - Test namespaces with all sinks
   - Add to `test/test_integration_namespace.ml`
 
-- [ ] **Commit**: Phase 4 complete - Formatter & sink integration
+- [x] **Commit**: Phase 4 complete - Formatter & sink integration
 
 ---
 
@@ -690,10 +690,10 @@ val namespace : t -> string option
 ## Master Checklist
 
 ### Core Implementation
-- [ ] Phase 1: Core Namespace Infrastructure
-- [ ] Phase 2: Scoped Logging API
-- [ ] Phase 3: Functor-Based Loggers
-- [ ] Phase 4: Formatter & Sink Integration
+- [x] Phase 1: Core Namespace Infrastructure
+- [x] Phase 2: Scoped Logging API
+- [x] Phase 3: Functor-Based Loggers
+- [x] Phase 4: Formatter & Sink Integration
 - [ ] Phase 5: PPX Support
 
 ### Documentation & Polish
