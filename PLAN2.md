@@ -393,13 +393,13 @@ val namespace : t -> string option
   - Test configuration per logger
   - Add to `test/test_flo_scoped.ml`
 
-- [ ] **3.5. Example Code**
+- [x] **3.5. Example Code**
   - Create `examples/scoped_logging.ml`
   - Demonstrate library usage pattern
   - Show application configuration
   - Show multiple namespaces
 
-- [ ] **Commit**: Phase 3 complete - Functor-based loggers
+- [x] **Commit**: Phase 3 complete - Functor-based loggers
 
 ---
 

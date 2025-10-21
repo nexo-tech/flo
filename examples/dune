@@ -96,3 +96,8 @@
  (name eio_integration)
  (modules eio_integration)
  (libraries flo eio_main))
+
+(executable
+ (name scoped_logging)
+ (modules scoped_logging)
+ (libraries flo eio_main unix))
