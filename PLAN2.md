@@ -371,23 +371,23 @@ val namespace : t -> string option
 
 #### Tasks:
 
-- [ ] **3.1. Create Flo_scoped Module**
+- [x] **3.1. Create Flo_scoped Module**
   - Create `lib/flo_scoped.ml` and `.mli`
   - Define `NAMESPACE` and `LOGGER` signatures
   - Stub out module structure
 
-- [ ] **3.2. Implement Make Functor**
+- [x] **3.2. Implement Make Functor**
   - Implement `Make` functor
   - Forward all logging calls to `Flo.scoped_*`
   - Implement scoped configuration functions
   - Implement scoped context propagation
 
-- [ ] **3.3. Runtime Logger Creation**
+- [x] **3.3. Runtime Logger Creation**
   - Implement `Flo_scoped.create`
   - Return first-class module
   - Handle dynamic namespace assignment
 
-- [ ] **3.4. Unit Tests**
+- [x] **3.4. Unit Tests**
   - Test functor-based loggers
   - Test multiple loggers simultaneously
   - Test configuration per logger

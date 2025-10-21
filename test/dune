@@ -129,3 +129,8 @@
  (name test_namespace)
  (modules test_namespace)
  (libraries flo alcotest eio_main str))
+
+(test
+ (name test_flo_scoped)
+ (modules test_flo_scoped)
+ (libraries flo alcotest eio_main))
