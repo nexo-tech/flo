@@ -333,13 +333,13 @@ val namespace : t -> string option
 
 #### Tasks:
 
-- [ ] **2.1. Scoped Functions in Flo**
+- [x] **2.1. Scoped Functions in Flo**
   - Implement `scoped_trace`, `scoped_debug`, etc.
   - Implement `scoped_tracef`, `scoped_debugf`, etc.
   - Implement `scoped_*_fields` variants
   - Add namespace parameter to log dispatch
 
-- [ ] **2.2. Fiber-Local Namespace Context**
+- [x] **2.2. Fiber-Local Namespace Context**
   - Add namespace to `Flo_context`
   - Implement `Flo.with_namespace`
   - Implement `Flo.get_current_namespace`

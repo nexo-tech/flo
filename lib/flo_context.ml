@@ -79,3 +79,21 @@ let bind_all pairs =
       List.iter (fun (key, value) ->
         let _ = add key value ctx in ()
       ) pairs
+
+(* Namespace support *)
+let namespace_key = "__flo_namespace__"
+
+let get_namespace () =
+  match get_current () with
+  | None -> None
+  | Some ctx ->
+      match get namespace_key ctx with
+      | Some (Value.String ns) -> Some ns
+      | _ -> None
+
+let set_namespace namespace =
+  bind namespace_key (Value.String namespace)
+
+let with_namespace namespace f =
+  let ctx = add namespace_key (Value.String namespace) empty in
+  with_context ctx f

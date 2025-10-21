@@ -47,6 +47,53 @@ val warnf : ('a, unit, string, unit) format4 -> 'a
 val errorf : ('a, unit, string, unit) format4 -> 'a
 val fatalf : ('a, unit, string, unit) format4 -> 'a
 
+(** {1 Scoped Logging} *)
+
+(** Scoped logging functions with explicit namespace.
+
+    Libraries should use scoped logging to allow applications to configure
+    log levels per component.
+
+    Example:
+    {[
+      (* In your library *)
+      let log_database msg = Flo.scoped_info "mylib.database" msg
+
+      (* Application configures *)
+      Flo.set_level_for "mylib.database" Debug;
+
+      (* Log is emitted with namespace *)
+      log_database "Connection established"
+    ]}
+*)
+
+(** Scoped logging at each severity level *)
+val scoped_trace : string -> ?location:Location.t -> string -> unit
+val scoped_debug : string -> ?location:Location.t -> string -> unit
+val scoped_info : string -> ?location:Location.t -> string -> unit
+val scoped_success : string -> ?location:Location.t -> string -> unit
+val scoped_warn : string -> ?location:Location.t -> string -> unit
+val scoped_error : string -> ?location:Location.t -> string -> unit
+val scoped_fatal : string -> ?location:Location.t -> string -> unit
+
+(** Scoped printf-style logging *)
+val scoped_tracef : string -> ('a, unit, string, unit) format4 -> 'a
+val scoped_debugf : string -> ('a, unit, string, unit) format4 -> 'a
+val scoped_infof : string -> ('a, unit, string, unit) format4 -> 'a
+val scoped_successf : string -> ('a, unit, string, unit) format4 -> 'a
+val scoped_warnf : string -> ('a, unit, string, unit) format4 -> 'a
+val scoped_errorf : string -> ('a, unit, string, unit) format4 -> 'a
+val scoped_fatalf : string -> ('a, unit, string, unit) format4 -> 'a
+
+(** Scoped structured logging *)
+val scoped_trace_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val scoped_debug_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val scoped_info_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val scoped_success_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val scoped_warn_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val scoped_error_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+val scoped_fatal_fields : string -> ?location:Location.t -> string -> fields:(string * Value.t) list -> unit
+
 (** {1 Structured Logging} *)
 
 (** Log message with structured fields at various severity levels.
@@ -133,6 +180,33 @@ val get_trace_id : unit -> string option
     @return Some span_id if in span context, None otherwise
 *)
 val get_span_id : unit -> string option
+
+(** {2 Namespace Context} *)
+
+(** Execute function with namespace in fiber-local context.
+
+    All logs within the function (and child fibers) will use this namespace
+    unless explicitly overridden with scoped_* functions.
+
+    Example:
+    {[
+      Flo.with_namespace "mylib.handler" (fun () ->
+        Flo.info "Request received";  (* Uses "mylib.handler" namespace *)
+        process ()
+      )
+    ]}
+
+    @param namespace The namespace to set
+    @param f The function to execute
+    @return Result of f
+*)
+val with_namespace : string -> (unit -> 'a) -> 'a
+
+(** Get current namespace from fiber-local context.
+
+    @return Some namespace if set, None for root namespace
+*)
+val get_current_namespace : unit -> string option
 
 (** {1 Exception Handling} *)
 

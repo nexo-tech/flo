@@ -48,6 +48,27 @@ let dispatch_record record =
 (* Helper to create and dispatch record *)
 let log_message ?location severity message =
   let record = Record.make ~severity ~message in
+  (* Check for namespace in context *)
+  let record = match Flo_context.get_namespace () with
+    | Some ns -> Record.with_namespace ns record
+    | None -> record
+  in
+  let record = match location with
+    | Some loc -> Record.with_location loc record
+    | None -> record
+  in
+  let record = match Flo_context.get_current () with
+    | Some ctx ->
+        let attrs = Flo_context.to_list ctx in
+        Record.with_attributes attrs record
+    | None -> record
+  in
+  dispatch_record record
+
+(* Helper to create and dispatch record with explicit namespace *)
+let log_message_scoped ?location namespace severity message =
+  let record = Record.make ~severity ~message in
+  let record = Record.with_namespace namespace record in
   let record = match location with
     | Some loc -> Record.with_location loc record
     | None -> record
@@ -78,9 +99,58 @@ let warnf fmt = Printf.ksprintf warn fmt
 let errorf fmt = Printf.ksprintf error fmt
 let fatalf fmt = Printf.ksprintf fatal fmt
 
+(* Scoped logging - with explicit namespace *)
+let scoped_trace namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Trace msg
+
+let scoped_debug namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Debug msg
+
+let scoped_info namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Info msg
+
+let scoped_success namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Success msg
+
+let scoped_warn namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Warn msg
+
+let scoped_error namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Error msg
+
+let scoped_fatal namespace ?location msg =
+  log_message_scoped ?location namespace Severity.Fatal msg
+
+(* Scoped printf-style logging *)
+let scoped_tracef namespace fmt =
+  Printf.ksprintf (scoped_trace namespace) fmt
+
+let scoped_debugf namespace fmt =
+  Printf.ksprintf (scoped_debug namespace) fmt
+
+let scoped_infof namespace fmt =
+  Printf.ksprintf (scoped_info namespace) fmt
+
+let scoped_successf namespace fmt =
+  Printf.ksprintf (scoped_success namespace) fmt
+
+let scoped_warnf namespace fmt =
+  Printf.ksprintf (scoped_warn namespace) fmt
+
+let scoped_errorf namespace fmt =
+  Printf.ksprintf (scoped_error namespace) fmt
+
+let scoped_fatalf namespace fmt =
+  Printf.ksprintf (scoped_fatal namespace) fmt
+
 (* Structured logging *)
 let log_fields ?location severity message ~fields =
   let record = Record.make ~severity ~message in
+  (* Check for namespace in context *)
+  let record = match Flo_context.get_namespace () with
+    | Some ns -> Record.with_namespace ns record
+    | None -> record
+  in
   let record = match location with
     | Some loc -> Record.with_location loc record
     | None -> record
@@ -114,6 +184,44 @@ let error_fields ?location message ~fields =
 
 let fatal_fields ?location message ~fields =
   log_fields ?location Severity.Fatal message ~fields
+
+(* Scoped structured logging *)
+let scoped_log_fields namespace ?location severity message ~fields =
+  let record = Record.make ~severity ~message in
+  let record = Record.with_namespace namespace record in
+  let record = match location with
+    | Some loc -> Record.with_location loc record
+    | None -> record
+  in
+  let record = Record.with_attributes fields record in
+  let record = match Flo_context.get_current () with
+    | Some ctx ->
+        let ctx_attrs = Flo_context.to_list ctx in
+        Record.with_attributes ctx_attrs record
+    | None -> record
+  in
+  dispatch_record record
+
+let scoped_trace_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Trace message ~fields
+
+let scoped_debug_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Debug message ~fields
+
+let scoped_info_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Info message ~fields
+
+let scoped_success_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Success message ~fields
+
+let scoped_warn_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Warn message ~fields
+
+let scoped_error_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Error message ~fields
+
+let scoped_fatal_fields namespace ?location message ~fields =
+  scoped_log_fields namespace ?location Severity.Fatal message ~fields
 
 (* Common field shortcuts - OpenTelemetry semantic conventions *)
 let http_method method_ = ("http.method", Value.string method_)
@@ -172,6 +280,13 @@ let bind fields =
          context management in the main API *)
       ()
   | None -> ()
+
+(* Namespace context propagation *)
+let with_namespace namespace f =
+  Flo_context.with_namespace namespace f
+
+let get_current_namespace () =
+  Flo_context.get_namespace ()
 
 (* Exception handling *)
 let catch ?(level=Severity.Error) f =

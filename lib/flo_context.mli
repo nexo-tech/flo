@@ -134,3 +134,43 @@ val bind : string -> Value.t -> unit
     @param pairs List of (key, value) pairs
 *)
 val bind_all : (string * Value.t) list -> unit
+
+(** {1 Namespace Support} *)
+
+(** Reserved key for namespace in context *)
+val namespace_key : string
+
+(** Get current namespace from fiber-local context.
+
+    @return Some namespace if set, None otherwise
+*)
+val get_namespace : unit -> string option
+
+(** Set namespace in current fiber's context.
+
+    @param namespace The namespace to set
+*)
+val set_namespace : string -> unit
+
+(** Execute function with namespace in context.
+
+    The namespace is available to all logging calls within the function
+    and child fibers automatically inherit it.
+
+    Example:
+    {[
+      Flo_context.with_namespace "mylib.database" (fun () ->
+        (* All logs here will have namespace "mylib.database" *)
+        Flo.info "Connected";
+        Eio.Fiber.fork (fun () ->
+          (* Child fiber also has the namespace *)
+          Flo.info "Query executed"
+        )
+      )
+    ]}
+
+    @param namespace The namespace to set
+    @param f The function to execute
+    @return Result of f
+*)
+val with_namespace : string -> (unit -> 'a) -> 'a
