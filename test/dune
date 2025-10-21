@@ -139,3 +139,9 @@
  (name test_integration_namespace)
  (modules test_integration_namespace)
  (libraries flo alcotest eio_main str unix))
+
+(test
+ (name test_ppx_namespace)
+ (modules test_ppx_namespace)
+ (libraries flo alcotest eio_main)
+ (preprocess (pps ppx_flo)))

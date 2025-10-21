@@ -450,12 +450,12 @@ val namespace : t -> string option
 
 #### Tasks:
 
-- [ ] **5.1. PPX Namespace Attribute**
+- [x] **5.1. PPX Namespace Attribute**
   - Add `[@flo.namespace "..."]` attribute support
   - Automatically inject namespace into logs
   - Support module-level namespace
 
-- [ ] **5.2. Automatic Namespace from Module Path**
+- [x] **5.2. Automatic Namespace from Module Path**
   - Extract module path as namespace
   - `MyLib.Database.connect` → `"mylib.database"`
   - Configurable transformation rules
