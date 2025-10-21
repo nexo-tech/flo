@@ -333,6 +333,67 @@ let span_expression_extension =
     )
 
 (* ========================================================================
+   Feature 4a: Explicit Scoped Logging Extension
+   [%log.scoped "namespace" level "message"]
+   ======================================================================== *)
+
+(* Extension for [%log.scoped "namespace" level "message"] *)
+let scoped_extension level =
+  Extension.V3.declare
+    ("log.scoped." ^ level)
+    Extension.Context.expression
+    Ast_pattern.(single_expr_payload __)
+    (fun ~ctxt expr ->
+      let loc = Expansion_context.Extension.extension_point_loc ctxt in
+      let code_path = Expansion_context.Extension.code_path ctxt in
+
+      (* Parse: should be application with namespace as first arg *)
+      match expr.pexp_desc with
+      | Pexp_apply (namespace_expr, [(Nolabel, message_expr)]) ->
+          (* [%log.scoped.info "namespace" "message"] *)
+          let loc_expr = location_expr_full ~loc code_path in
+          let func_name = "scoped_" ^ level in
+          let func_ident =
+            Ast_builder.Default.pexp_ident ~loc
+              (Ast_builder.Default.Located.mk ~loc (Ldot (Lident "Flo", func_name)))
+          in
+          Ast_builder.Default.pexp_apply ~loc func_ident [
+            (Nolabel, namespace_expr);
+            (Labelled "location", loc_expr);
+            (Nolabel, message_expr)
+          ]
+      | _ ->
+          Location.raise_errorf ~loc
+            "ppx_flo: [%%log.scoped.%s] expects: [%%log.scoped.%s \"namespace\" \"message\"]"
+            level level
+    )
+
+let scoped_extensions =
+  List.map scoped_extension
+    ["trace"; "debug"; "info"; "success"; "warn"; "error"; "fatal"]
+
+(* ========================================================================
+   Feature 4b: Namespace Scope Extension
+   let%log.namespace "mylib" in expr -> Flo.with_namespace "mylib" (fun () -> expr)
+   ======================================================================== *)
+
+let namespace_extension =
+  Extension.V3.declare
+    "log.namespace"
+    Extension.Context.expression
+    Ast_pattern.(single_expr_payload __)
+    (fun ~ctxt _expr ->
+      let loc = Expansion_context.Extension.extension_point_loc ctxt in
+
+      (* Note: let%log.namespace requires a different PPX approach
+         For now, we recommend using [@@@flo.namespace] attribute instead
+         or Flo.with_namespace for runtime scoping *)
+
+      Location.raise_errorf ~loc
+        "ppx_flo: let%%log.namespace is not yet fully implemented. Use [@@@flo.namespace] attribute or Flo.with_namespace instead."
+    )
+
+(* ========================================================================
    Feature 4: Namespace Attributes and Automatic Extraction
    [@flo.namespace "mylib"] or automatic from module path
    ======================================================================== *)
@@ -502,7 +563,7 @@ let namespace_mapper =
 let () =
   Driver.register_transformation
     "ppx_flo"
-    (* Only register span extension, log extensions handled by mapper *)
-    ~extensions:[span_expression_extension]
-    (* Impl mapper handles [%log...] and let%log... extension points with namespace awareness *)
+    (* Register extensions: span, scoped logging, and namespace scope *)
+    ~extensions:([span_expression_extension; namespace_extension] @ scoped_extensions)
+    (* Impl mapper handles [%log...] extension points with namespace awareness *)
     ~impl:namespace_mapper#structure

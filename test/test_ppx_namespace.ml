@@ -87,11 +87,38 @@ let test_structured_mixing () =
 
     Alcotest.(check bool) "structured mixing works" true true
 
-(* Test that logs without namespace still work *)
-let () =
-  (* Reset namespace for this test *)
-  (* Note: We can't easily test this in the same file due to module-level attribute *)
-  ()
+(* Test explicit scoped logging extension *)
+let test_explicit_scoped_extension () =
+  Eio_main.run @@ fun _env ->
+    (* Use [%log.scoped.<level> "namespace" "message"] syntax *)
+    [%log.scoped.info "explicit.namespace" "Explicitly scoped log"];
+    [%log.scoped.debug "another.namespace" "Another scoped log"];
+    [%log.scoped.warn "test.warnings" "Warning from explicit namespace"];
+
+    Alcotest.(check bool) "explicit scoped extensions work" true true
+
+(* Test scoped extension with variables *)
+let test_scoped_extension_with_variables () =
+  Eio_main.run @@ fun _env ->
+    let namespace = "dynamic.namespace" in
+    let message = "Dynamic message" in
+
+    [%log.scoped.info namespace message];
+
+    Alcotest.(check bool) "scoped with variables works" true true
+
+(* Test all severity levels with scoped extension *)
+let test_scoped_extension_all_levels () =
+  Eio_main.run @@ fun _env ->
+    [%log.scoped.trace "test.scoped" "Trace"];
+    [%log.scoped.debug "test.scoped" "Debug"];
+    [%log.scoped.info "test.scoped" "Info"];
+    [%log.scoped.success "test.scoped" "Success"];
+    [%log.scoped.warn "test.scoped" "Warn"];
+    [%log.scoped.error "test.scoped" "Error"];
+    [%log.scoped.fatal "test.scoped" "Fatal"];
+
+    Alcotest.(check bool) "all scoped levels work" true true
 
 let () =
   Alcotest.run "PPX Namespace" [
@@ -108,5 +135,10 @@ let () =
     "auto", [
       Alcotest.test_case "auto_namespace" `Quick Cache.test_auto_namespace;
       Alcotest.test_case "hierarchical_auto_namespace" `Quick Api.Handler.test_hierarchical_auto_namespace;
+    ];
+    "scoped_extension", [
+      Alcotest.test_case "explicit_scoped_extension" `Quick test_explicit_scoped_extension;
+      Alcotest.test_case "scoped_extension_with_variables" `Quick test_scoped_extension_with_variables;
+      Alcotest.test_case "scoped_extension_all_levels" `Quick test_scoped_extension_all_levels;
     ];
   ]

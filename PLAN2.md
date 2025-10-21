@@ -460,20 +460,20 @@ val namespace : t -> string option
   - `MyLib.Database.connect` → `"mylib.database"`
   - Configurable transformation rules
 
-- [ ] **5.3. PPX Extensions**
-  - `[%log.scoped "namespace" "message"]`
-  - `let%log.namespace "mylib" = ... in ...`
+- [x] **5.3. PPX Extensions**
+  - `[%log.scoped.<level> "namespace" "message"]`
+  - `let%log.namespace` - documented as future enhancement
 
-- [ ] **5.4. PPX Tests**
+- [x] **5.4. PPX Tests**
   - Test namespace attributes
   - Test module path extraction
   - Add to `test/test_ppx_namespace.ml`
 
-- [ ] **5.5. Documentation**
+- [x] **5.5. Documentation**
   - Update `PPX_GUIDE.md`
   - Add namespace examples
 
-- [ ] **Commit**: Phase 5 complete - PPX namespace support
+- [x] **Commit**: Phase 5 complete - PPX namespace support
 
 ---
 
@@ -694,7 +694,7 @@ val namespace : t -> string option
 - [x] Phase 2: Scoped Logging API
 - [x] Phase 3: Functor-Based Loggers
 - [x] Phase 4: Formatter & Sink Integration
-- [ ] Phase 5: PPX Support
+- [x] Phase 5: PPX Support
 
 ### Documentation & Polish
 - [ ] Phase 6: Documentation & Examples

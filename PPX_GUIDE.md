@@ -2,11 +2,12 @@
 
 ## Overview
 
-The `ppx_flo` preprocessor provides three main extensions to make logging more convenient and powerful:
+The `ppx_flo` preprocessor provides four main extensions to make logging more convenient and powerful:
 
 1. **Automatic Location Capture** - `[%log.level "message"]`
 2. **Structured Logging with Type Inference** - `[%log.level "message" ~field:value]`
 3. **Span Annotations** - `[%span expr]`
+4. **Namespace Support** - `[@@@flo.namespace "..."]` and `[%log.scoped.level]`
 
 ## Installation
 
@@ -298,6 +299,204 @@ let process_batch items =
   [%log.info "Processing" ~total:(List.length items * 2)];
 ```
 
+## Feature 4: Namespace Support
+
+The PPX automatically integrates with Flo's namespace-based logging system, allowing you to scope logs at compile-time.
+
+### File-Level Namespace
+
+Set a namespace for an entire file:
+
+```ocaml
+[@@@flo.namespace "mylib.database"]
+
+(* All PPX log calls in this file use this namespace *)
+let connect host =
+  [%log.info "Connecting to database"];  (* Uses "mylib.database" *)
+  establish_connection host
+```
+
+Expands to:
+
+```ocaml
+let connect host =
+  Flo.scoped_info "mylib.database"
+    ~location:(Location.make_full ...)
+    "Connecting to database";
+  establish_connection host
+```
+
+### Module-Level Namespace
+
+Set namespace for a specific module:
+
+```ocaml
+module Database = struct
+  [@@@flo.namespace "mylib.db"]
+
+  let query sql =
+    [%log.debug "Executing query"];  (* Uses "mylib.db" *)
+    execute sql
+end
+```
+
+### Automatic Namespace from Module Path
+
+When a file has a namespace, nested modules automatically extend it:
+
+```ocaml
+[@@@flo.namespace "mylib"]
+
+module Database = struct
+  (* Automatically uses "mylib.database" *)
+  let connect () =
+    [%log.info "Connected"]
+end
+
+module Cache = struct
+  module Pool = struct
+    (* Automatically uses "mylib.cache.pool" *)
+    let get () =
+      [%log.debug "Cache hit"]
+  end
+end
+```
+
+### Explicit Scoped Extension
+
+Use `[%log.scoped.<level>]` for one-off scoped logs:
+
+```ocaml
+(* Override current namespace for a single log *)
+[%log.scoped.info "specific.namespace" "One-off log"]
+
+(* Use with variables *)
+let namespace = get_namespace_from_config () in
+[%log.scoped.warn namespace "Warning message"]
+```
+
+Expands to:
+
+```ocaml
+Flo.scoped_info "specific.namespace"
+  ~location:(Location.make_full ...)
+  "One-off log"
+```
+
+Available for all levels:
+- `[%log.scoped.trace namespace msg]`
+- `[%log.scoped.debug namespace msg]`
+- `[%log.scoped.info namespace msg]`
+- `[%log.scoped.success namespace msg]`
+- `[%log.scoped.warn namespace msg]`
+- `[%log.scoped.error namespace msg]`
+- `[%log.scoped.fatal namespace msg]`
+
+### Namespace with Structured Logging
+
+Namespaces work seamlessly with structured logging:
+
+```ocaml
+[@@@flo.namespace "mylib.api"]
+
+let handle_request method_ path =
+  [%log.info "Request received" ~method_ ~path]
+```
+
+Expands to:
+
+```ocaml
+Flo.scoped_info_fields "mylib.api"
+  ~location:(Location.make_full ...)
+  "Request received"
+  ~fields:[("method_", ...); ("path", ...)]
+```
+
+### Namespace Priority
+
+When multiple namespace sources are present:
+
+1. **`[%log.scoped.*]`** - Explicit namespace (highest priority)
+2. **`[@@@flo.namespace]`** - Attribute namespace
+3. **Auto-generated** - From module path
+4. **No namespace** - Falls back to global logging
+
+Example:
+
+```ocaml
+[@@@flo.namespace "default.namespace"]
+
+let example () =
+  (* Uses "default.namespace" *)
+  [%log.info "Message 1"];
+
+  (* Overrides with explicit namespace *)
+  [%log.scoped.info "explicit.namespace" "Message 2"]
+```
+
+### Best Practices
+
+**For Libraries**:
+
+```ocaml
+(* mylib/database.ml *)
+[@@@flo.namespace "mylib.database"]
+
+let connect host =
+  [%log.info "Connecting"];
+  establish_connection host
+
+let query conn sql =
+  [%log.debug "Executing query" ~sql];
+  execute conn sql
+```
+
+**For Applications**:
+
+```ocaml
+(* app/main.ml *)
+[@@@flo.namespace "app"]
+
+(* Configure library verbosity *)
+let () =
+  Flo.set_level_for "mylib.database" Severity.Debug;
+  Flo.set_level_for "app" Severity.Info
+
+module Api = struct
+  (* Auto-generates "app.api" namespace *)
+  let handle req =
+    [%log.info "Handling request"];
+    process req
+end
+```
+
+### Migration from Manual Scoping
+
+Before (manual):
+```ocaml
+let connect host =
+  Flo.scoped_info "mylib.database" "Connecting";
+  Flo.scoped_debug "mylib.database"
+    (Printf.sprintf "Host: %s" host);
+  establish_connection host
+```
+
+After (with PPX):
+```ocaml
+[@@@flo.namespace "mylib.database"]
+
+let connect host =
+  [%log.info "Connecting"];
+  [%log.debug "Host: %s" ~host];  (* Using structured logging *)
+  establish_connection host
+```
+
+Benefits:
+- ✅ Less boilerplate
+- ✅ Automatic location capture
+- ✅ Type-safe structured fields
+- ✅ Compile-time namespace verification
+
 ## Examples
 
 See `examples/ppx_usage.ml` for comprehensive examples of all PPX features.
@@ -311,11 +510,16 @@ The PPX is **100% compatible** with the manual API:
 - No performance difference between PPX and manual
 - All features available in both PPX and manual forms
 
-## Future Enhancements
+## Limitations and Future Enhancements
 
-Potential future additions (not currently implemented):
+### Current Limitations
 
-- Custom span names in [%span] (currently fixed to "span")
+- **`let%log.namespace` syntax** - Not yet implemented. Use `[@@@flo.namespace]` attribute or `Flo.with_namespace` instead.
+- **Custom span names** - `[%span]` currently uses a fixed name. Use `Flo.with_span` for custom names.
+
+### Potential Future Additions
+
+- `let%log.namespace "mylib" in expr` syntax for expression-scoped namespaces
 - Function argument auto-capture in spans
 - Format string support in PPX extensions (e.g., `[%log.infof "Count: %d" count]`)
 - Type-safe field validation at compile time
