@@ -4,16 +4,36 @@
     basis. Namespaces are hierarchical (dot-separated) and level lookup follows
     the hierarchy from most specific to least specific.
 
+    See also:
+    - {!Flo.set_level_for} for application-level API
+    - {!Flo.get_effective_level} for querying effective levels
+    - {!Flo_scoped} for type-safe scoped loggers
+    - {!Flo.scoped_info} and related for manual scoped logging
+
     Example:
     {[
       (* Configure levels *)
       Flo_namespace.set_level "mylib.database" Severity.Debug;
       Flo_namespace.set_level "mylib" Severity.Info;
 
-      (* Lookup effective level *)
-      get_effective_level "mylib.database.pool"  (* Returns Debug *)
-      get_effective_level "mylib.cache"          (* Returns Info *)
-      get_effective_level "other"                (* Returns root level *)
+      (* Lookup effective level - hierarchical search *)
+      get_effective_level "mylib.database.pool"  (* Returns Debug - inherits from mylib.database *)
+      get_effective_level "mylib.cache"          (* Returns Info - inherits from mylib *)
+      get_effective_level "other"                (* Returns root level - no match *)
+    ]}
+
+    Typical usage - applications configure at startup:
+    {[
+      let () =
+        Eio_main.run @@ fun env ->
+          (* Configure third-party libraries *)
+          Flo.set_level_for "dream" Severity.Warn;
+          Flo.set_level_for "cohttp.client" Severity.Error;
+
+          (* Configure your library *)
+          Flo.set_level_for "mylib.database" Severity.Debug;
+
+          run_application env
     ]}
 *)
 

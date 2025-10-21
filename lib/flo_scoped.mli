@@ -4,9 +4,15 @@
     type-safe namespace management. Each logger is bound to a specific namespace
     at compile-time or runtime.
 
+    See also:
+    - {!Flo.scoped_info} and related functions for manual scoped logging
+    - {!Flo.with_namespace} for context-based namespace scoping
+    - {!Flo_namespace} for namespace configuration
+    - {!Flo.set_level_for} to configure logger verbosity
+
     Example:
     {[
-      (* In your library *)
+      (* In your library - create a scoped logger *)
       module Log = Flo_scoped.Make(struct
         let namespace = "mylib.database"
       end)
@@ -17,7 +23,19 @@
         Log.debug_fields "Connection params" ~fields:[
           ("host", Value.string db_host);
           ("port", Value.int db_port);
-        ]
+        ];
+        establish_connection ()
+
+      (* Application configures your library's verbosity *)
+      (* Flo.set_level_for "mylib.database" Severity.Debug *)
+    ]}
+
+    For runtime namespace determination:
+    {[
+      let component = get_component_name () in
+      let logger = Flo_scoped.create ("mylib." ^ component) in
+      let module Log = (val logger : Flo_scoped.LOGGER) in
+      Log.info "Initialized"
     ]}
 *)
 

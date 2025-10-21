@@ -1,0 +1,5 @@
+(executable
+ (name main)
+ (modules main)
+ (libraries flo eio_main unix)
+ (preprocess (pps ppx_flo)))
