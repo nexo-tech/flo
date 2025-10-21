@@ -17,6 +17,7 @@
 - 🛡️ **Type Safety** - Compile-time guarantees throughout
 - 🔧 **PPX Extensions** - Automatic location capture and ergonomic syntax
 - 🎯 **Variable Support** - PPX works with both literals and variables
+- 🏷️ **Namespace-Based Logging** - Fine-grained per-component verbosity control
 
 ## Quick Start
 
@@ -115,6 +116,33 @@ let handle_request headers =
   )
 ```
 
+### Namespace-Based Logging
+
+Control log verbosity per library/component:
+
+```ocaml
+(* Library code with PPX *)
+[@@@flo.namespace "mylib.database"]
+
+let connect host =
+  [%log.info "Connecting"];  (* Tagged with "mylib.database" *)
+  [%log.debug "Host" ~host];
+  establish_connection host
+
+(* Or use functor for type safety *)
+module Log = Flo_scoped.Make(struct
+  let namespace = "mylib.database"
+end)
+
+(* Application configures verbosity *)
+let () =
+  Flo.set_level_for "mylib.database" Severity.Debug;  (* Debug for DB *)
+  Flo.set_level_for "mylib.cache" Severity.Warn;       (* Only warnings *)
+
+  (* Hierarchical: child inherits parent level *)
+  (* "mylib.database.pool" inherits Debug from "mylib.database" *)
+```
+
 ### File Logging
 
 ```ocaml
@@ -193,6 +221,8 @@ let result = [%span
 ## Modules
 
 - **Flo** - Simple API for everyday logging
+- **Flo_scoped** - Type-safe namespace-scoped loggers
+- **Flo_namespace** - Namespace registry and configuration
 - **Flo_structured** - Type-safe structured logging
 - **Flo_semconv** - OpenTelemetry semantic conventions
 - **Flo_eio** - Distributed tracing integration
@@ -209,6 +239,7 @@ Run the examples to see Flō in action:
 ```bash
 dune exec examples/simple_app.exe           # Basic usage
 dune exec examples/structured_events.exe    # Structured logging
+dune exec examples/scoped_logging.exe       # Namespace-based logging
 dune exec examples/file_logging.exe         # File rotation
 dune exec examples/perf_app.exe             # Performance
 dune exec examples/web_service.exe          # Distributed tracing
@@ -216,9 +247,11 @@ dune exec examples/web_service.exe          # Distributed tracing
 
 ## Documentation
 
-- [TUTORIAL.md](TUTORIAL.md) - Step-by-step guide
-- [DESIGN.md](DESIGN.md) - Architecture details
-- [PLAN.md](PLAN.md) - Implementation roadmap
+- [TUTORIAL.md](TUTORIAL.md) - Step-by-step guide with namespace examples
+- [DESIGN.md](DESIGN.md) - Architecture details with namespace design
+- [PPX_GUIDE.md](PPX_GUIDE.md) - PPX namespace attributes
+- [PLAN.md](PLAN.md) - Original implementation roadmap
+- [PLAN2.md](PLAN2.md) - Namespace feature implementation plan
 
 ## Requirements
 

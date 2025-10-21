@@ -9,11 +9,12 @@ This tutorial walks through common logging patterns and best practices for using
 3. [PPX Extensions](#ppx-extensions) ⭐ NEW
 4. [Structured Logging](#structured-logging)
 5. [Context Propagation](#context-propagation)
-6. [File Logging](#file-logging)
-7. [High-Performance Logging](#high-performance-logging)
-8. [Distributed Tracing](#distributed-tracing)
-9. [Testing Best Practices](#testing-best-practices) ⭐ NEW
-10. [Production Patterns](#production-patterns)
+6. [Namespace-Based Logging](#namespace-based-logging) ⭐ NEW
+7. [File Logging](#file-logging)
+8. [High-Performance Logging](#high-performance-logging)
+9. [Distributed Tracing](#distributed-tracing)
+10. [Testing Best Practices](#testing-best-practices) ⭐ NEW
+11. [Production Patterns](#production-patterns)
 
 ## Getting Started
 
@@ -272,6 +273,390 @@ Flo_structured.in_span "handle_order" (fun _ ->
   success "Order complete"
 )
 (* All spans share the same trace_id, different span_ids *)
+```
+
+## Namespace-Based Logging
+
+### Why Namespaces?
+
+When building applications that use multiple libraries, you need fine-grained control over log verbosity per component. Namespaces solve this problem.
+
+**The Problem**:
+```ocaml
+(* Your app uses LibraryA and LibraryB, both log internally *)
+LibraryA.process ()  (* Logs at DEBUG level *)
+LibraryB.cache ()    (* Also logs at DEBUG level *)
+
+(* You want: *)
+(* - See DEBUG logs from LibraryA.database *)
+(* - See only WARN logs from LibraryB.cache *)
+(* - See INFO logs from your app code *)
+```
+
+**The Solution**: Hierarchical namespaces with per-component configuration.
+
+### For Library Authors
+
+#### Step 1: Choose Your Namespace
+
+Use your library name as the root namespace:
+
+```ocaml
+(* mylib/database.ml *)
+[@@@flo.namespace "mylib.database"]  (* File-level PPX attribute *)
+
+(* OR manually: *)
+module Log = Flo_scoped.Make(struct
+  let namespace = "mylib.database"
+end)
+```
+
+#### Step 2: Use Scoped Logging
+
+**With PPX** (recommended):
+```ocaml
+[@@@flo.namespace "mylib.database"]
+
+let connect host port =
+  [%log.info "Connecting to database"];
+  [%log.debug "Connection params" ~host ~port];
+
+  match establish_connection host port with
+  | Ok conn ->
+      [%log.success "Connected"];
+      conn
+  | Error err ->
+      [%log.error "Connection failed" ~error:err];
+      raise (Connection_error err)
+```
+
+**With Functor** (compile-time type safety):
+```ocaml
+(* mylib/log.ml *)
+module Log = Flo_scoped.Make(struct
+  let namespace = "mylib.database"
+end)
+
+(* mylib/database.ml *)
+let connect host port =
+  Log.info "Connecting to database";
+  Log.debugf "Host: %s, Port: %d" host port;
+  establish_connection host port
+```
+
+**With Manual Scoped Functions**:
+```ocaml
+let connect host port =
+  Flo.scoped_info "mylib.database" "Connecting to database";
+  Flo.scoped_debugf "mylib.database" "Host: %s, Port: %d" host port;
+  establish_connection host port
+```
+
+#### Step 3: Organize Sub-Components
+
+Use hierarchical namespaces for sub-components:
+
+```ocaml
+(* mylib/database.ml *)
+[@@@flo.namespace "mylib.database"]
+
+module Pool = struct
+  (* Automatically becomes "mylib.database.pool" with PPX *)
+  let acquire () =
+    [%log.debug "Acquiring connection from pool"]
+end
+
+module Query = struct
+  (* Automatically becomes "mylib.database.query" *)
+  let execute sql =
+    [%log.trace "Executing SQL" ~sql]
+end
+```
+
+#### Step 4: Document Configuration
+
+Tell users how to configure your library's logging:
+
+```ocaml
+(** Configure MyLib logging verbosity:
+
+    {[
+      (* Set level for entire library *)
+      Flo.set_level_for "mylib" Severity.Warn;
+
+      (* Enable debug for specific component *)
+      Flo.set_level_for "mylib.database" Severity.Debug;
+
+      (* Quiet the cache *)
+      Flo.set_level_for "mylib.cache" Severity.Error;
+    ]}
+*)
+```
+
+### For Application Developers
+
+#### Step 1: Configure Namespace Levels
+
+Set up logging configuration at application startup:
+
+```ocaml
+let () =
+  Eio_main.run @@ fun env ->
+    (* Set global default *)
+    Flo.set_level Severity.Info;
+
+    (* Configure libraries *)
+    Flo.set_level_for "mylib.database" Severity.Debug;
+    Flo.set_level_for "mylib.cache" Severity.Warn;
+    Flo.set_level_for "other_lib" Severity.Error;
+
+    (* Configure your app components *)
+    Flo.set_level_for "app.api" Severity.Debug;
+    Flo.set_level_for "app.background" Severity.Info;
+
+    (* Run application *)
+    run_application env
+```
+
+#### Step 2: Use Namespaces in Your Code
+
+**With PPX**:
+```ocaml
+(* app/api.ml *)
+[@@@flo.namespace "app.api"]
+
+let handle_request req =
+  [%log.info "Request received" ~method_:req.method_ ~path:req.path];
+
+  process_request req
+```
+
+**With Context**:
+```ocaml
+let handle_request req =
+  Flo.with_namespace "app.api" (fun () ->
+    Flo.info "Request received";
+
+    (* Child fibers inherit namespace *)
+    Eio.Fiber.fork (fun () ->
+      Flo.debug "Processing in background"
+    );
+
+    process_request req
+  )
+```
+
+#### Step 3: Monitor and Adjust
+
+Check what namespaces are configured:
+
+```ocaml
+(* See all configured namespace levels *)
+let levels = Flo.get_all_levels () in
+List.iter (fun (ns, level) ->
+  Printf.printf "%s -> %s\n" ns (Severity.to_string level)
+) levels;
+
+(* Check effective level for a namespace *)
+let effective = Flo.get_effective_level "mylib.database.pool" in
+Printf.printf "Effective level: %s\n" (Severity.to_string effective)
+```
+
+Adjust levels dynamically at runtime:
+
+```ocaml
+(* Increase verbosity for debugging *)
+Flo.set_level_for "mylib.database" Severity.Trace;
+
+(* Reduce verbosity in production *)
+Flo.set_level_for "noisy.component" Severity.Warn
+```
+
+### Hierarchical Namespace Lookup
+
+Namespaces use dot-separated hierarchies with parent-to-child inheritance:
+
+```ocaml
+(* Configure parent *)
+Flo.set_level_for "mylib" Severity.Warn;
+
+(* Child inherits parent level *)
+Flo.get_effective_level "mylib.cache"     (* Returns Warn *)
+Flo.get_effective_level "mylib.database"  (* Returns Warn *)
+
+(* Override child *)
+Flo.set_level_for "mylib.database" Severity.Debug;
+
+(* Grandchild inherits from immediate parent *)
+Flo.get_effective_level "mylib.database.pool"  (* Returns Debug *)
+
+(* Sibling still uses original parent *)
+Flo.get_effective_level "mylib.cache"  (* Still Warn *)
+```
+
+**Search order** for `"a.b.c.d"`:
+1. Exact match: `"a.b.c.d"`
+2. Parent: `"a.b.c"`
+3. Grandparent: `"a.b"`
+4. Great-grandparent: `"a"`
+5. Root: `""` (global level)
+
+### Common Patterns
+
+#### Pattern 1: Library with Default Namespace
+
+```ocaml
+(* mylib/log.ml - centralized logging module *)
+module Log = Flo_scoped.Make(struct
+  let namespace = "mylib"
+end)
+
+(* Export for library-wide use *)
+let info = Log.info
+let debug = Log.debug
+let warn = Log.warn
+let error = Log.error
+
+(* Convenience for sub-components *)
+let with_component name f =
+  Flo.with_namespace ("mylib." ^ name) f
+
+(* mylib/database.ml *)
+let connect () =
+  MyLib.Log.info "Connecting";
+  establish_connection ()
+
+let query sql =
+  MyLib.Log.with_component "database.query" (fun () ->
+    MyLib.Log.debug "Executing query";
+    execute sql
+  )
+```
+
+#### Pattern 2: Application with Per-Feature Namespaces
+
+```ocaml
+(* app/main.ml *)
+[@@@flo.namespace "app"]
+
+module Api = struct
+  (* Auto-becomes "app.api" *)
+  let start () =
+    [%log.info "Starting API server"]
+end
+
+module Background = struct
+  (* Auto-becomes "app.background" *)
+  let process_jobs () =
+    [%log.debug "Processing background jobs"]
+end
+
+let () =
+  (* Configure verbosity *)
+  Flo.set_level_for "app.api" Severity.Info;
+  Flo.set_level_for "app.background" Severity.Debug;
+
+  Api.start ();
+  Background.process_jobs ()
+```
+
+#### Pattern 3: Mixed Library and App Logging
+
+```ocaml
+let main () =
+  Eio_main.run @@ fun env ->
+    (* Configure third-party libraries *)
+    Flo.set_level_for "dream" Severity.Warn;
+    Flo.set_level_for "cohttp" Severity.Error;
+
+    (* Configure your libraries *)
+    Flo.set_level_for "mylib.database" Severity.Debug;
+    Flo.set_level_for "mylib.cache" Severity.Info;
+
+    (* Configure your app *)
+    Flo.set_level_for "app" Severity.Info;
+    Flo.set_level_for "app.diagnostics" Severity.Debug;
+
+    run_application env
+```
+
+#### Pattern 4: Dynamic Namespace from Config
+
+```ocaml
+(* Load configuration from file/env *)
+let setup_logging config =
+  List.iter (fun (namespace, level_str) ->
+    match Severity.of_string level_str with
+    | Ok level -> Flo.set_level_for namespace level
+    | Error _ -> Flo.warnf "Invalid level for %s: %s" namespace level_str
+  ) config.log_levels
+
+(* Example config.json *)
+(* {
+     "log_levels": {
+       "mylib.database": "debug",
+       "mylib.cache": "warn",
+       "app": "info"
+     }
+   } *)
+```
+
+### Namespace Best Practices
+
+#### ✅ DO
+
+- **Use lowercase with dots**: `"mylib.component.subcomponent"`
+- **Match your library name**: If library is `cohttp`, use `"cohttp"`
+- **Keep depth reasonable**: 2-4 levels is ideal
+- **Be consistent**: Use same naming across your codebase
+- **Document configuration**: Tell users how to configure your namespaces
+- **Configure early**: Set levels before logging begins
+
+#### ❌ DON'T
+
+- **Use special characters**: Avoid `"my-lib"`, `"my_lib"`, `"My.Lib"`
+- **Go too deep**: `"a.b.c.d.e.f.g"` is hard to manage
+- **Change namespaces frequently**: Pick one and stick with it
+- **Forget to document**: Users need to know how to configure
+
+### Debugging Namespace Issues
+
+**Check effective level**:
+```ocaml
+let level = Flo.get_effective_level "mylib.database" in
+Flo.infof "Effective level: %s" (Severity.to_string level)
+```
+
+**List all configured namespaces**:
+```ocaml
+let all = Flo.get_all_levels () in
+List.iter (fun (ns, level) ->
+  Flo.infof "%s -> %s" ns (Severity.to_string level)
+) all
+```
+
+**Test if a log would be emitted**:
+```ocaml
+let effective = Flo.get_effective_level "mylib.database" in
+let would_log = Severity.compare Severity.Debug effective >= 0 in
+if would_log then
+  Flo.info "Debug logs for mylib.database are enabled"
+```
+
+### Example: Real-World Library
+
+See `examples/scoped_logging.ml` for a complete demonstration showing:
+- Database library with scoped logging
+- Cache library with different verbosity
+- API handler with structured fields
+- Authentication with runtime namespaces
+- Application configuration
+- Hierarchical inheritance
+- Dynamic level changes
+
+Run it:
+```bash
+dune exec examples/scoped_logging.exe
 ```
 
 ## File Logging
