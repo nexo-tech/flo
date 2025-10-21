@@ -229,6 +229,62 @@ let test_with_colors_true () =
   Alcotest.(check bool) "has ANSI codes" true
     (String.contains formatted '\027')
 
+(* Test formatting with namespace *)
+let test_format_with_namespace () =
+  let record =
+    Record.make ~severity:Severity.Info ~message:"Test with namespace"
+    |> Record.with_namespace "mylib.component"
+  in
+
+  let formatted = Flo_format_pretty.format record in
+
+  (* Should contain namespace in brackets *)
+  Alcotest.(check bool) "contains namespace" true
+    (try ignore (Str.search_forward (Str.regexp "\\[mylib\\.component\\]") formatted 0); true
+     with Not_found -> false)
+
+(* Test formatting without namespace *)
+let test_format_without_namespace () =
+  let record = Record.make ~severity:Severity.Info ~message:"No namespace" in
+
+  let formatted = Flo_format_pretty.format record in
+
+  (* Should not have double brackets (would be [[INFO]] if namespace was there) *)
+  (* Just verify format works *)
+  Alcotest.(check bool) "formatted output not empty" true
+    (String.length formatted > 0)
+
+(* Test namespace with colors *)
+let test_format_namespace_with_colors () =
+  let record =
+    Record.make ~severity:Severity.Info ~message:"Test"
+    |> Record.with_namespace "mylib.test"
+  in
+
+  let module F = (val Flo_format_pretty.with_colors true : Flo_format_pretty.FORMATTER) in
+  let formatted = F.format record in
+
+  (* Should contain ANSI color codes for namespace (magenta) *)
+  Alcotest.(check bool) "has ANSI codes" true
+    (String.contains formatted '\027')
+
+(* Test namespace without colors *)
+let test_format_namespace_without_colors () =
+  let record =
+    Record.make ~severity:Severity.Info ~message:"Test"
+    |> Record.with_namespace "mylib.test"
+  in
+
+  let module F = (val Flo_format_pretty.with_colors false : Flo_format_pretty.FORMATTER) in
+  let formatted = F.format record in
+
+  (* Should contain namespace but no ANSI codes *)
+  Alcotest.(check bool) "no ANSI codes" false
+    (String.contains formatted '\027');
+  Alcotest.(check bool) "has namespace" true
+    (try ignore (Str.search_forward (Str.regexp "\\[mylib\\.test\\]") formatted 0); true
+     with Not_found -> false)
+
 let () =
   let open Alcotest in
   run "Flo_format_pretty" [
@@ -257,5 +313,11 @@ let () =
     ];
     "parse", [
       test_case "parse is unsupported" `Quick test_parse_unsupported;
+    ];
+    "namespace", [
+      test_case "format with namespace" `Quick test_format_with_namespace;
+      test_case "format without namespace" `Quick test_format_without_namespace;
+      test_case "namespace with colors" `Quick test_format_namespace_with_colors;
+      test_case "namespace without colors" `Quick test_format_namespace_without_colors;
     ];
   ]

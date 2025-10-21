@@ -409,18 +409,18 @@ val namespace : t -> string option
 
 #### Tasks:
 
-- [ ] **4.1. Update Pretty Formatter**
+- [x] **4.1. Update Pretty Formatter**
   - Add namespace to pretty output
   - Color-code namespaces
   - Configurable namespace width/truncation
   - Test in `test/test_flo_format_pretty.ml`
 
-- [ ] **4.2. Update JSON Formatter**
+- [x] **4.2. Update JSON Formatter**
   - Add `"namespace"` field to JSON
   - Follow OpenTelemetry conventions
   - Test in `test/test_flo_format_json.ml`
 
-- [ ] **4.3. Update Logfmt Formatter**
+- [x] **4.3. Update Logfmt Formatter**
   - Add `namespace=` to logfmt output
   - Test in `test/test_flo_format_logfmt.ml`
 

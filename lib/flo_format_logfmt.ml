@@ -96,6 +96,11 @@ let format record =
    | Some name -> pairs := format_pair "event_name" name :: !pairs
    | None -> ());
 
+  (* Add namespace if present *)
+  (match record.namespace with
+   | Some ns -> pairs := format_pair "namespace" ns :: !pairs
+   | None -> ());
+
   (* Add attributes (flattened) *)
   List.iter (fun (key, value) ->
     let value_str = value_to_logfmt_string value in
@@ -186,6 +191,12 @@ let parse logfmt_str =
     (* Build record with optional fields *)
     let record = Record.make_with_timestamp ~timestamp ~severity ~message in
 
+    (* Parse optional namespace *)
+    let namespace =
+      try Some (List.assoc "namespace" pairs)
+      with Not_found -> None
+    in
+
     (* Add attributes *)
     let record =
       let attrs = List.filter (fun (k, _) ->
@@ -193,12 +204,18 @@ let parse logfmt_str =
                          "location_file"; "location_line"; "location_column";
                          "location_module"; "location_function";
                          "trace_id"; "span_id"; "trace_flags"; "parent_span_id";
-                         "event_name"])
+                         "event_name"; "namespace"])
       ) pairs in
       if attrs <> [] then
         Record.with_attributes (List.map (fun (k, v) -> (k, Value.string v)) attrs) record
       else
         record
+    in
+
+    (* Add namespace if present *)
+    let record = match namespace with
+      | Some ns -> Record.with_namespace ns record
+      | None -> record
     in
 
     Ok record

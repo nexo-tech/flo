@@ -243,6 +243,48 @@ let test_format_empty_value () =
   Alcotest.(check bool) "has empty key" true
     (String.contains logfmt 'e')
 
+(* Test formatting with namespace *)
+let test_format_with_namespace () =
+  let record =
+    Record.make ~severity:Severity.Info ~message:"Test with namespace"
+    |> Record.with_namespace "mylib.component"
+  in
+
+  let logfmt = Flo_format_logfmt.format record in
+
+  (* Check namespace appears in output *)
+  Alcotest.(check bool) "has namespace" true
+    (try ignore (Str.search_forward (Str.regexp "namespace=mylib\\.component") logfmt 0); true
+     with Not_found -> false)
+
+(* Test formatting without namespace *)
+let test_format_without_namespace () =
+  let record = Record.make ~severity:Severity.Info ~message:"No namespace" in
+
+  let logfmt = Flo_format_logfmt.format record in
+
+  (* Check namespace does not appear *)
+  Alcotest.(check bool) "no namespace" false
+    (try ignore (Str.search_forward (Str.regexp "namespace=") logfmt 0); true
+     with Not_found -> false)
+
+(* Test round-trip with namespace *)
+let test_round_trip_with_namespace () =
+  let original =
+    Record.make_with_timestamp ~timestamp:test_timestamp
+      ~severity:Severity.Info ~message:"Namespaced message"
+    |> Record.with_namespace "test.namespace"
+  in
+
+  let logfmt = Flo_format_logfmt.format original in
+  match Flo_format_logfmt.parse logfmt with
+  | Ok parsed ->
+      Alcotest.(check string) "message preserved" original.message parsed.message;
+      Alcotest.(check (option string)) "namespace preserved"
+        (Some "test.namespace") (Record.namespace parsed)
+  | Error msg ->
+      Alcotest.fail (Printf.sprintf "Round-trip with namespace failed: %s" msg)
+
 let () =
   let open Alcotest in
   run "Flo_format_logfmt" [
@@ -267,5 +309,10 @@ let () =
     ];
     "round_trip", [
       test_case "round-trip conversion" `Quick test_round_trip;
+      test_case "round-trip with namespace" `Quick test_round_trip_with_namespace;
+    ];
+    "namespace", [
+      test_case "format with namespace" `Quick test_format_with_namespace;
+      test_case "format without namespace" `Quick test_format_without_namespace;
     ];
   ]

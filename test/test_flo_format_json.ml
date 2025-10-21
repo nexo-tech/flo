@@ -311,6 +311,55 @@ let test_format_single_line () =
 
   Alcotest.(check bool) "single line" false (String.contains json_str '\n')
 
+(* Test formatting with namespace *)
+let test_format_with_namespace () =
+  let record =
+    Record.make ~severity:Severity.Info ~message:"Test with namespace"
+    |> Record.with_namespace "mylib.component"
+  in
+
+  let json_str = Flo_format_json.format record in
+  let json = Yojson.Safe.from_string json_str in
+  let open Yojson.Safe.Util in
+
+  (* Check namespace field *)
+  let namespace = json |> member "namespace" |> to_string in
+  Alcotest.(check string) "namespace" "mylib.component" namespace
+
+(* Test formatting without namespace *)
+let test_format_without_namespace () =
+  let record = Record.make ~severity:Severity.Info ~message:"No namespace" in
+
+  let json_str = Flo_format_json.format record in
+  let json = Yojson.Safe.from_string json_str in
+  let open Yojson.Safe.Util in
+
+  (* Check namespace field is not present *)
+  let has_namespace =
+    try
+      let _ns = json |> member "namespace" |> to_string in
+      true
+    with _ -> false
+  in
+  Alcotest.(check bool) "no namespace field" false has_namespace
+
+(* Test round-trip with namespace *)
+let test_round_trip_with_namespace () =
+  let original =
+    Record.make_with_timestamp ~timestamp:test_timestamp
+      ~severity:Severity.Info ~message:"Namespaced message"
+    |> Record.with_namespace "test.namespace"
+  in
+
+  let json_str = Flo_format_json.format original in
+  match Flo_format_json.parse json_str with
+  | Ok parsed ->
+      Alcotest.(check string) "message preserved" original.message parsed.message;
+      Alcotest.(check (option string)) "namespace preserved"
+        (Some "test.namespace") (Record.namespace parsed)
+  | Error msg ->
+      Alcotest.fail (Printf.sprintf "Round-trip with namespace failed: %s" msg)
+
 let () =
   let open Alcotest in
   run "Flo_format_json" [
@@ -333,5 +382,10 @@ let () =
     "round_trip", [
       test_case "round-trip basic record" `Quick test_round_trip;
       test_case "round-trip complete record" `Quick test_round_trip_complete;
+      test_case "round-trip with namespace" `Quick test_round_trip_with_namespace;
+    ];
+    "namespace", [
+      test_case "format with namespace" `Quick test_format_with_namespace;
+      test_case "format without namespace" `Quick test_format_without_namespace;
     ];
   ]

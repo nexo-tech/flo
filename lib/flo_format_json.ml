@@ -78,6 +78,12 @@ let record_to_json record =
     | None -> fields
   in
 
+  (* Add namespace if present *)
+  let fields = match record.namespace with
+    | Some ns -> ("namespace", `String ns) :: fields
+    | None -> fields
+  in
+
   `Assoc (List.rev fields)
 
 (* Format record as JSON string *)
@@ -169,6 +175,12 @@ let parse json_str =
       with _ -> None
     in
 
+    (* Parse optional namespace *)
+    let namespace =
+      try Some (json |> member "namespace" |> to_string)
+      with _ -> None
+    in
+
     (* Construct record *)
     let record = Record.make_with_timestamp ~timestamp ~severity ~message in
     let record = match observed_timestamp with
@@ -194,6 +206,10 @@ let parse json_str =
     in
     let record = match body with
       | Some b -> Record.with_body b record
+      | None -> record
+    in
+    let record = match namespace with
+      | Some ns -> Record.with_namespace ns record
       | None -> record
     in
 

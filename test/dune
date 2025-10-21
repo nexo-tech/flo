@@ -39,7 +39,7 @@
 (test
  (name test_flo_format_pretty)
  (modules test_flo_format_pretty)
- (libraries flo alcotest))
+ (libraries flo alcotest str))
 
 (test
  (name test_flo_sink_console)
@@ -64,7 +64,7 @@
 (test
  (name test_flo_format_logfmt)
  (modules test_flo_format_logfmt)
- (libraries flo alcotest))
+ (libraries flo alcotest str))
 
 (test
  (name test_flo_structured)
