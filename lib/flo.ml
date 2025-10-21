@@ -250,7 +250,13 @@ let get_span_id () =
 
 (* Context propagation *)
 let with_trace_id trace_id f =
-  let ctx = Flo_context.add "trace_id" (Value.string trace_id) Flo_context.empty in
+  (* Preserve existing namespace if present *)
+  let ctx = Flo_context.empty in
+  let ctx = match Flo_context.get_namespace () with
+    | Some ns -> Flo_context.add Flo_context.namespace_key (Value.string ns) ctx
+    | None -> ctx
+  in
+  let ctx = Flo_context.add "trace_id" (Value.string trace_id) ctx in
   Flo_context.with_context ctx f
 
 let with_span span_name f =
@@ -259,14 +265,25 @@ let with_span span_name f =
     | None -> Trace_context.generate_trace_id ()
   in
   let span_id = Trace_context.generate_span_id () in
+  (* Preserve existing namespace if present *)
   let ctx = Flo_context.empty in
+  let ctx = match Flo_context.get_namespace () with
+    | Some ns -> Flo_context.add Flo_context.namespace_key (Value.string ns) ctx
+    | None -> ctx
+  in
   let ctx = Flo_context.add "trace_id" (Value.string trace_id) ctx in
   let ctx = Flo_context.add "span_id" (Value.string span_id) ctx in
   let ctx = Flo_context.add "span_name" (Value.string span_name) ctx in
   Flo_context.with_context ctx f
 
 let with_user user_id f =
-  let ctx = Flo_context.add "user_id" (Value.string user_id) Flo_context.empty in
+  (* Preserve existing namespace if present *)
+  let ctx = Flo_context.empty in
+  let ctx = match Flo_context.get_namespace () with
+    | Some ns -> Flo_context.add Flo_context.namespace_key (Value.string ns) ctx
+    | None -> ctx
+  in
+  let ctx = Flo_context.add "user_id" (Value.string user_id) ctx in
   Flo_context.with_context ctx f
 
 let bind fields =

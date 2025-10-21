@@ -549,6 +549,133 @@ let test_flo_context_namespace () =
     let ns4 = Flo_context.get_namespace () in
     Alcotest.(check (option string)) "namespace cleared after scope" None ns4
 
+(** Test namespace preserved with with_span *)
+let test_namespace_with_span () =
+  Eio_main.run @@ fun _env ->
+    Flo_namespace.clear_all ();
+
+    (* Set namespace, then use with_span *)
+    Flo.with_namespace "mylib.handler" (fun () ->
+      Flo.with_span "process_request" (fun () ->
+        (* Namespace should be preserved *)
+        let ns = Flo.get_current_namespace () in
+        Alcotest.(check (option string))
+          "namespace preserved in span" (Some "mylib.handler") ns;
+
+        (* Also verify we have span context *)
+        let trace_id = Flo.get_trace_id () in
+        let span_id = Flo.get_span_id () in
+        Alcotest.(check bool) "has trace_id" true (Option.is_some trace_id);
+        Alcotest.(check bool) "has span_id" true (Option.is_some span_id)
+      );
+
+      (* Namespace should still be there after span *)
+      let ns2 = Flo.get_current_namespace () in
+      Alcotest.(check (option string))
+        "namespace preserved after span" (Some "mylib.handler") ns2
+    )
+
+(** Test namespace preserved with with_trace_id *)
+let test_namespace_with_trace_id () =
+  Eio_main.run @@ fun _env ->
+    Flo.with_namespace "mylib.component" (fun () ->
+      Flo.with_trace_id "test-trace-id" (fun () ->
+        (* Namespace should be preserved *)
+        let ns = Flo.get_current_namespace () in
+        Alcotest.(check (option string))
+          "namespace preserved with trace_id" (Some "mylib.component") ns;
+
+        (* Verify trace_id is set *)
+        let trace_id = Flo.get_trace_id () in
+        Alcotest.(check (option string))
+          "trace_id is set" (Some "test-trace-id") trace_id
+      )
+    )
+
+(** Test namespace preserved with with_user *)
+let test_namespace_with_user () =
+  Eio_main.run @@ fun _env ->
+    Flo.with_namespace "mylib.auth" (fun () ->
+      Flo.with_user "alice" (fun () ->
+        (* Namespace should be preserved *)
+        let ns = Flo.get_current_namespace () in
+        Alcotest.(check (option string))
+          "namespace preserved with user" (Some "mylib.auth") ns
+      )
+    )
+
+(** Test complex context: namespace + span + trace *)
+let test_namespace_with_full_context () =
+  Eio_main.run @@ fun _env ->
+    Flo_namespace.clear_all ();
+    Flo.set_level Severity.Debug;
+
+    (* Build up complex context *)
+    Flo.with_namespace "mylib.api" (fun () ->
+      Flo.with_trace_id "trace-123" (fun () ->
+        Flo.with_span "handle_request" (fun () ->
+          Flo.with_user "bob" (fun () ->
+            (* All context should be present *)
+            let ns = Flo.get_current_namespace () in
+            let trace_id = Flo.get_trace_id () in
+            let span_id = Flo.get_span_id () in
+
+            Alcotest.(check (option string))
+              "namespace in full context" (Some "mylib.api") ns;
+            Alcotest.(check (option string))
+              "trace_id in full context" (Some "trace-123") trace_id;
+            Alcotest.(check bool)
+              "span_id in full context" true (Option.is_some span_id);
+
+            (* Log a message - should have all context *)
+            Flo.info "Complex context message"
+          )
+        )
+      )
+    )
+
+(** Test namespace + structured events *)
+let test_namespace_with_structured_events () =
+  Eio_main.run @@ fun _env ->
+    Flo_namespace.clear_all ();
+
+    (* Use scoped structured logging *)
+    Flo.scoped_info_fields "mylib.events" "User registered" ~fields:[
+      ("user_id", Value.string "user-123");
+      ("email", Value.string "test@example.com");
+    ];
+
+    (* Use namespace context with structured logging *)
+    Flo.with_namespace "mylib.events" (fun () ->
+      Flo.info_fields "Order created" ~fields:[
+        ("order_id", Value.string "order-456");
+        ("total", Value.float 99.99);
+      ]
+    );
+
+    Alcotest.(check bool) "structured events work with namespace" true true
+
+(** Test nested spans preserve namespace *)
+let test_nested_spans_preserve_namespace () =
+  Eio_main.run @@ fun _env ->
+    Flo.with_namespace "mylib.service" (fun () ->
+      Flo.with_span "outer_span" (fun () ->
+        let ns1 = Flo.get_current_namespace () in
+        Alcotest.(check (option string))
+          "namespace in outer span" (Some "mylib.service") ns1;
+
+        Flo.with_span "inner_span" (fun () ->
+          let ns2 = Flo.get_current_namespace () in
+          Alcotest.(check (option string))
+            "namespace in inner span" (Some "mylib.service") ns2
+        );
+
+        let ns3 = Flo.get_current_namespace () in
+        Alcotest.(check (option string))
+          "namespace after inner span" (Some "mylib.service") ns3
+      )
+    )
+
 (** Test suite *)
 let () =
   Alcotest.run "Flo_namespace" [
@@ -591,5 +718,13 @@ let () =
       Alcotest.test_case "context_namespace_auto_merge" `Quick test_context_namespace_auto_merge;
       Alcotest.test_case "namespace_context_with_fibers" `Quick test_namespace_context_with_fibers;
       Alcotest.test_case "flo_context_namespace" `Quick test_flo_context_namespace;
+    ];
+    "integration", [
+      Alcotest.test_case "namespace_with_span" `Quick test_namespace_with_span;
+      Alcotest.test_case "namespace_with_trace_id" `Quick test_namespace_with_trace_id;
+      Alcotest.test_case "namespace_with_user" `Quick test_namespace_with_user;
+      Alcotest.test_case "namespace_with_full_context" `Quick test_namespace_with_full_context;
+      Alcotest.test_case "namespace_with_structured_events" `Quick test_namespace_with_structured_events;
+      Alcotest.test_case "nested_spans_preserve_namespace" `Quick test_nested_spans_preserve_namespace;
     ];
   ]

@@ -345,23 +345,23 @@ val namespace : t -> string option
   - Implement `Flo.get_current_namespace`
   - Auto-merge namespace into records
 
-- [ ] **2.3. Integration with Existing Context**
+- [x] **2.3. Integration with Existing Context**
   - Ensure namespace works with trace_id, span_id
   - Update `Flo.with_span` to preserve namespace
   - Namespace in structured events
 
-- [ ] **2.4. Unit Tests**
+- [x] **2.4. Unit Tests**
   - Test all scoped functions
   - Test namespace context propagation
   - Test namespace + other context
   - Add to `test/test_namespace.ml`
 
-- [ ] **2.5. Update Documentation**
+- [x] **2.5. Update Documentation**
   - Add namespace examples to `lib/flo.mli`
   - Document hierarchical behavior
   - Add migration guide
 
-- [ ] **Commit**: Phase 2 complete - Scoped logging API
+- [x] **Commit**: Phase 2 complete - Scoped logging API
 
 ---
 

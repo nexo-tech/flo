@@ -8,6 +8,167 @@
       Flo.info "Application started";
       Flo.successf "Processed %d items" count;
     ]}
+
+    {2 Namespace-Based Logging}
+
+    Flō supports hierarchical namespace-based logging for fine-grained control
+    over log verbosity per component. This is especially useful when using
+    libraries that log internally.
+
+    {3 Quick Start}
+
+    Libraries can use scoped logging:
+    {[
+      (* In your library code *)
+      let log_database msg = Flo.scoped_info "mylib.database" msg
+
+      (* Or use context-based approach *)
+      let connect () =
+        Flo.with_namespace "mylib.database" (fun () ->
+          Flo.info "Connecting...";
+          establish_connection ()
+        )
+    ]}
+
+    Applications can configure verbosity per namespace:
+    {[
+      (* Application configuration *)
+      Flo.set_level Severity.Info;                    (* Root level *)
+      Flo.set_level_for "mylib.database" Severity.Debug;  (* Debug for DB *)
+      Flo.set_level_for "mylib.cache" Severity.Warn;      (* Only warnings *)
+    ]}
+
+    {3 Hierarchical Level Resolution}
+
+    Namespaces use dot-separated hierarchies. When a log is emitted, the
+    effective level is determined by searching from most specific to least:
+
+    - "a.b.c.d" → "a.b.c" → "a.b" → "a" → "" (root)
+
+    Example:
+    {[
+      Flo.set_level Severity.Info;                (* Root: Info *)
+      Flo.set_level_for "mylib" Severity.Warn;    (* mylib.*: Warn *)
+      Flo.set_level_for "mylib.database" Severity.Debug;  (* mylib.database.*: Debug *)
+
+      (* Effective levels: *)
+      (* "mylib.database"       → Debug (exact match) *)
+      (* "mylib.database.pool"  → Debug (inherits from mylib.database) *)
+      (* "mylib.cache"          → Warn (inherits from mylib) *)
+      (* "otherlib"             → Info (uses root) *)
+    ]}
+
+    {3 Two Approaches for Namespaced Logging}
+
+    {4 Explicit Scoped Functions}
+
+    Use scoped_* functions to explicitly set the namespace:
+    {[
+      Flo.scoped_info "mylib.database" "Connection established";
+      Flo.scoped_debugf "mylib.cache" "Cache hit: %s" key;
+      Flo.scoped_info_fields "mylib.api" "Request" ~fields:[
+        Flo.http_method "GET";
+        Flo.http_status 200;
+      ]
+    ]}
+
+    {4 Context-Based Namespaces}
+
+    Use with_namespace for automatic propagation:
+    {[
+      Flo.with_namespace "mylib.handler" (fun () ->
+        Flo.info "Request received";  (* Uses "mylib.handler" *)
+
+        Eio.Fiber.fork (fun () ->
+          Flo.debug "Processing in background"  (* Child inherits namespace *)
+        );
+
+        Flo.with_span "db_query" (fun () ->
+          Flo.info "Querying database"  (* Namespace preserved with span *)
+        )
+      )
+    ]}
+
+    {3 Integration with Distributed Tracing}
+
+    Namespaces work seamlessly with trace context:
+    {[
+      Flo.with_namespace "myapp.api" (fun () ->
+        Flo.with_span "handle_request" (fun () ->
+          (* Both namespace and span context are available *)
+          Flo.info "Processing request";
+
+          (* Logs will include:
+             - namespace: "myapp.api"
+             - trace_id, span_id from with_span
+             - any other context fields *)
+        )
+      )
+    ]}
+
+    {3 Migration Guide}
+
+    {4 For Existing Applications}
+
+    Existing code continues to work without changes:
+    {[
+      (* Existing code - unchanged *)
+      Flo.info "Application started";
+      Flo.set_level Severity.Debug;
+    ]}
+
+    To adopt namespaces gradually:
+    {[
+      (* Wrap subsystems with namespaces *)
+      let start_database () =
+        Flo.with_namespace "app.database" (fun () ->
+          (* All DB logs automatically namespaced *)
+          initialize_db ()
+        )
+
+      (* Configure verbosity *)
+      Flo.set_level_for "app.database" Severity.Debug
+    ]}
+
+    {4 For Library Authors}
+
+    Create a logging module for your library:
+    {[
+      (* mylib/log.ml *)
+      let namespace = "mylib"
+
+      let info msg = Flo.scoped_info namespace msg
+      let debug msg = Flo.scoped_debug namespace msg
+      let infof fmt = Flo.scoped_infof namespace fmt
+
+      let with_context name f =
+        Flo.with_namespace (namespace ^ "." ^ name) f
+    ]}
+
+    Use in your library code:
+    {[
+      (* mylib/database.ml *)
+      let connect host =
+        Log.info "Connecting to database";
+        Log.with_context "connection" (fun () ->
+          establish_connection host
+        )
+    ]}
+
+    Library users can then configure:
+    {[
+      (* Application code *)
+      Flo.set_level_for "mylib" Severity.Warn;           (* Quiet by default *)
+      Flo.set_level_for "mylib.database" Severity.Debug; (* Debug DB issues *)
+    ]}
+
+    {3 Best Practices}
+
+    - Use lowercase dot-separated names: "mylib.component.subcomponent"
+    - Keep namespace depth reasonable (2-4 levels)
+    - Library namespace should match library name: "dream", "cohttp", etc.
+    - Application namespaces: "app.subsystem" or "myapp.feature"
+    - Configure at application startup before logging begins
 *)
 
 (** {1 Zero-Configuration Logging} *)
