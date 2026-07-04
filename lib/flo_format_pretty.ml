@@ -35,16 +35,21 @@ let color_for_severity = function
   | Severity.Error -> red               (* red *)
   | Severity.Fatal -> bold ^ red        (* bold red *)
 
-(* Format severity with padding *)
+let label_for_severity = function
+  | Severity.Trace -> "TRC"
+  | Severity.Debug -> "DBG"
+  | Severity.Info -> "INF"
+  | Severity.Success -> "SUC"
+  | Severity.Warn -> "WRN"
+  | Severity.Error -> "ERR"
+  | Severity.Fatal -> "FTL"
+
 let format_severity_colored severity =
   let color = color_for_severity severity in
-  let text = String.uppercase_ascii (Severity.to_string severity) in
-  let padded = Printf.sprintf "%-7s" text in  (* 7 chars for "SUCCESS" *)
-  Printf.sprintf "%s%s%s" color padded reset
+  Printf.sprintf "%s%s%s" color (label_for_severity severity) reset
 
 let format_severity_plain severity =
-  let text = String.uppercase_ascii (Severity.to_string severity) in
-  Printf.sprintf "%-7s" text
+  label_for_severity severity
 
 (* Format timestamp as YYYY-MM-DD HH:MM:SS.mmm *)
 let format_timestamp ts =
@@ -122,9 +127,11 @@ let make_formatter colorize =
         | None -> ""
       in
 
-      (* Format: [TIMESTAMP] [LEVEL] [namespace] message (location) event=... {attrs...} trace_id=... *)
-      Printf.sprintf "[%s] [%s]%s %s%s%s%s%s"
-        ts_str severity_str namespace_str record.message loc_str event_str attrs_str trace_str
+      let payload =
+        Printf.sprintf "%s%s%s%s%s" record.message loc_str event_str attrs_str
+          trace_str
+      in
+      Printf.sprintf "%s %s%s %s" ts_str severity_str namespace_str payload
 
     let parse _s =
       Error "Parsing is not supported for pretty format (lossy format)"

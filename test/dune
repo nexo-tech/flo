@@ -49,7 +49,7 @@
 (test
  (name test_flo)
  (modules test_flo)
- (libraries flo alcotest eio_main))
+ (libraries flo alcotest eio_main logs))
 
 (test
  (name test_integration)

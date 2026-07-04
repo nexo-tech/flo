@@ -1,10 +1,19 @@
-(** Namespace registry implementation using a hash table with mutex protection *)
+(** Namespace registry implementation using a hash table with lock protection *)
 
 (* Global registry: namespace -> level mapping *)
 let registry : (string, Severity.t) Hashtbl.t = Hashtbl.create 16
 
-(* Mutex for thread-safe access *)
-let mutex = Eio.Mutex.create ()
+let lock = Atomic.make false
+
+let with_lock f =
+  let rec acquire () =
+    if Atomic.compare_and_set lock false true then ()
+    else (
+      Domain.cpu_relax ();
+      acquire ())
+  in
+  acquire ();
+  Fun.protect ~finally:(fun () -> Atomic.set lock false) f
 
 (** Split namespace into hierarchical components.
 
@@ -26,19 +35,19 @@ let namespace_hierarchy namespace =
 
 (** Set level for a namespace *)
 let set_level namespace level =
-  Eio.Mutex.use_rw ~protect:true mutex (fun () ->
+  with_lock (fun () ->
     Hashtbl.replace registry namespace level
   )
 
 (** Get exact level for a namespace (no hierarchy lookup) *)
 let get_level namespace =
-  Eio.Mutex.use_rw ~protect:true mutex (fun () ->
+  with_lock (fun () ->
     Hashtbl.find_opt registry namespace
   )
 
 (** Get effective level with hierarchical lookup *)
 let get_effective_level ~namespace ~root_level =
-  Eio.Mutex.use_rw ~protect:true mutex (fun () ->
+  with_lock (fun () ->
     let hierarchy = namespace_hierarchy namespace in
     let rec find_level = function
       | [] -> root_level
@@ -53,18 +62,18 @@ let get_effective_level ~namespace ~root_level =
 
 (** Clear level for a namespace *)
 let clear_level namespace =
-  Eio.Mutex.use_rw ~protect:true mutex (fun () ->
+  with_lock (fun () ->
     Hashtbl.remove registry namespace
   )
 
 (** Get all configured levels *)
 let get_all_levels () =
-  Eio.Mutex.use_rw ~protect:true mutex (fun () ->
+  with_lock (fun () ->
     Hashtbl.fold (fun ns level acc -> (ns, level) :: acc) registry []
   )
 
 (** Clear all levels *)
 let clear_all () =
-  Eio.Mutex.use_rw ~protect:true mutex (fun () ->
+  with_lock (fun () ->
     Hashtbl.clear registry
   )

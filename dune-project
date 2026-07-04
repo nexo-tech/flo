@@ -24,6 +24,8 @@
   (dune (>= 3.16))
   (eio (>= 1.0))
   (eio_main (>= 1.0))
+  logs
+  mirage-crypto-rng
   (yojson (>= 2.0.0))
   (ptime (>= 1.0.0))
   (alcotest (and (>= 1.7.0) :with-test))))

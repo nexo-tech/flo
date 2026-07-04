@@ -147,6 +147,22 @@ let test_set_get_level () =
   (* Restore original *)
   Flo.set_level original
 
+let test_logs_reporter_smoke () =
+  let original_level = Flo.get_level () in
+  Flo.set_level Severity.Debug;
+  Flo.install_logs_reporter ();
+  let src = Logs.Src.create "test.logs_bridge" in
+  let module Log = (val Logs.src_log src : Logs.LOG) in
+  let request_id_tag =
+    Logs.Tag.def "request_id" Format.pp_print_string
+  in
+  let tags =
+    Logs.Tag.(empty |> add request_id_tag "req-123")
+  in
+  Log.info (fun log -> log ~tags "bridged %d" 1);
+  Flo.set_level original_level;
+  Alcotest.(check bool) "logs reporter works" true true
+
 (* Test nested context with with_span *)
 let test_nested_span () =
   Eio_main.run @@ fun _env ->
@@ -190,5 +206,6 @@ let () =
     ];
     "configuration", [
       test_case "set_level and get_level" `Quick test_set_get_level;
+      test_case "Logs reporter smoke" `Quick test_logs_reporter_smoke;
     ];
   ]

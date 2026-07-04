@@ -22,6 +22,18 @@ type t = {
   mutex : Eio.Mutex.t;
 }
 
+let write_line fd line =
+  let payload = line ^ "\n" in
+  let length = String.length payload in
+  let rec write_from offset =
+    if offset < length then
+      match Unix.write_substring fd payload offset (length - offset) with
+      | 0 -> ()
+      | written -> write_from (offset + written)
+      | exception Unix.Unix_error (Unix.EINTR, _, _) -> write_from offset
+  in
+  write_from 0
+
 let create ~sw:_ config =
   let formatter = match config.format with
     | `Pretty -> Flo_format_pretty.with_colors config.colorize
@@ -43,16 +55,9 @@ let write sink record =
     let module F = (val sink.formatter : Flo_format_pretty.FORMATTER) in
     let formatted = F.format record in
     Eio.Mutex.use_rw ~protect:true sink.mutex (fun () ->
-      (* Use standard OCaml output functions for console *)
       match sink.output_type with
-      | `Stderr ->
-          output_string stderr formatted;
-          output_char stderr '\n';
-          flush stderr
-      | `Stdout ->
-          output_string stdout formatted;
-          output_char stdout '\n';
-          flush stdout
+      | `Stderr -> write_line Unix.stderr formatted
+      | `Stdout -> write_line Unix.stdout formatted
     )
 
 let flush _sink =

@@ -1,32 +1,64 @@
 (* Global logger state *)
 let global_level = ref Severity.Info
 
+let acquire_atomic_lock lock =
+  let rec acquire () =
+    if Atomic.compare_and_set lock false true then ()
+    else (
+      Domain.cpu_relax ();
+      acquire ())
+  in
+  acquire ()
+
+let release_atomic_lock lock =
+  Atomic.set lock false
+
+let with_atomic_lock lock f =
+  acquire_atomic_lock lock;
+  Fun.protect ~finally:(fun () -> release_atomic_lock lock) f
+
+let output_lock = Atomic.make false
+let logs_reporter_lock = Atomic.make false
+let console_formatter = Flo_format_pretty.with_colors true
+
+let write_line fd line =
+  let payload = line ^ "\n" in
+  let length = String.length payload in
+  let rec write_from offset =
+    if offset < length then
+      match Unix.write_substring fd payload offset (length - offset) with
+      | 0 -> ()
+      | written -> write_from (offset + written)
+      | exception Unix.Unix_error (Unix.EINTR, _, _) -> write_from offset
+  in
+  write_from 0
+
 (* Cache for effective namespace levels to improve performance *)
 (* Key: namespace string, Value: effective level *)
 let level_cache : (string, Severity.t) Hashtbl.t = Hashtbl.create 32
-let cache_mutex = Eio.Mutex.create ()
+let cache_lock = Atomic.make false
 
 (* Get effective level for namespace with caching *)
 let get_effective_level_cached namespace =
   let ns = match namespace with Some s -> s | None -> "" in
   (* Try cache first *)
-  let cached = Eio.Mutex.use_rw ~protect:true cache_mutex (fun () ->
-    Hashtbl.find_opt level_cache ns
-  ) in
+  let cached =
+    with_atomic_lock cache_lock (fun () -> Hashtbl.find_opt level_cache ns)
+  in
   match cached with
   | Some level -> level
   | None ->
       (* Not in cache, compute and cache it *)
       let effective_level = Flo_namespace.get_effective_level
         ~namespace:ns ~root_level:!global_level in
-      Eio.Mutex.use_rw ~protect:true cache_mutex (fun () ->
+      with_atomic_lock cache_lock (fun () ->
         Hashtbl.replace level_cache ns effective_level
       );
       effective_level
 
 (* Clear the level cache (call when global or namespace levels change) *)
 let clear_level_cache () =
-  Eio.Mutex.use_rw ~protect:true cache_mutex (fun () ->
+  with_atomic_lock cache_lock (fun () ->
     Hashtbl.clear level_cache
   )
 
@@ -37,13 +69,9 @@ let dispatch_record record =
 
   (* Check if record's severity meets the effective level *)
   if Severity.compare record.Record.severity effective_level >= 0 then
-    (* For Phase 1, write directly to stderr using the formatter *)
-    (* Note: This is not thread-safe. Proper implementation will use
-       Eio.Mutex or other synchronization in later phases *)
-    let formatted = Flo_format_pretty.format record in
-    output_string stderr formatted;
-    output_char stderr '\n';
-    flush stderr
+    let module F = (val console_formatter : Flo_format_pretty.FORMATTER) in
+    let formatted = F.format record in
+    with_atomic_lock output_lock (fun () -> write_line Unix.stderr formatted)
 
 (* Helper to create and dispatch record *)
 let log_message ?location severity message =
@@ -230,6 +258,93 @@ let user_id id = ("user.id", Value.string id)
 let duration_ms ms = ("duration_ms", Value.float ms)
 let error_type type_ = ("error.type", Value.string type_)
 let error_message msg = ("error.message", Value.string msg)
+
+let severity_of_logs_level = function
+  | Logs.App -> Severity.Info
+  | Logs.Error -> Severity.Error
+  | Logs.Warning -> Severity.Warn
+  | Logs.Info -> Severity.Info
+  | Logs.Debug -> Severity.Debug
+
+let logs_level_of_severity = function
+  | Severity.Trace | Severity.Debug -> Logs.Debug
+  | Severity.Info | Severity.Success -> Logs.Info
+  | Severity.Warn -> Logs.Warning
+  | Severity.Error | Severity.Fatal -> Logs.Error
+
+let trim_trailing_newlines text =
+  let rec last_non_newline index =
+    if index < 0 then -1
+    else
+      match text.[index] with
+      | '\n' | '\r' -> last_non_newline (index - 1)
+      | _ -> index
+  in
+  match last_non_newline (String.length text - 1) with
+  | -1 -> ""
+  | index -> String.sub text 0 (index + 1)
+
+let format_tag_value (Logs.Tag.V (definition, value)) =
+  Format.asprintf "%a" (Logs.Tag.printer definition) value
+
+let fields_of_logs_tags = function
+  | None -> []
+  | Some tags ->
+      Logs.Tag.fold
+        (fun (Logs.Tag.V (definition, _) as tag) fields ->
+          (Logs.Tag.name definition, Value.string (format_tag_value tag))
+          :: fields)
+        tags []
+      |> List.rev
+
+let logs_namespace source =
+  let name = Logs.Src.name source in
+  if String.equal name (Logs.Src.name Logs.default) then None else Some name
+
+let logs_message ?header message =
+  match header with
+  | None | Some "" -> message
+  | Some header -> Printf.sprintf "%s: %s" header message
+
+let dispatch_logs_record source level ?header ?tags message =
+  let record =
+    Record.make ~severity:(severity_of_logs_level level)
+      ~message:(logs_message ?header (trim_trailing_newlines message))
+  in
+  let record =
+    match logs_namespace source with
+    | Some namespace -> Record.with_namespace namespace record
+    | None -> record
+  in
+  let fields = fields_of_logs_tags tags in
+  let record =
+    match fields with
+    | [] -> record
+    | fields -> Record.with_attributes fields record
+  in
+  dispatch_record record
+
+let logs_reporter () =
+  let report source level ~over continue message_callback =
+    let buffer = Buffer.create 256 in
+    let formatter = Format.formatter_of_buffer buffer in
+    message_callback @@ fun ?header ?tags format_and_arguments ->
+    Format.kfprintf
+      (fun formatter ->
+        Format.pp_print_flush formatter ();
+        dispatch_logs_record source level ?header ?tags (Buffer.contents buffer);
+        over ();
+        continue ())
+      formatter format_and_arguments
+  in
+  { Logs.report }
+
+let install_logs_reporter ?(level = Severity.Trace) () =
+  Logs.set_reporter_mutex
+    ~lock:(fun () -> acquire_atomic_lock logs_reporter_lock)
+    ~unlock:(fun () -> release_atomic_lock logs_reporter_lock);
+  Logs.set_reporter (logs_reporter ());
+  Logs.set_level ~all:true (Some (logs_level_of_severity level))
 
 (* Context getters *)
 let get_trace_id () =

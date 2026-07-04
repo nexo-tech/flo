@@ -44,6 +44,25 @@ let test_format_without_colors () =
   Alcotest.(check bool) "contains message" true
     (String.contains formatted 'W')
 
+let test_compact_severity_label () =
+  let module F =
+    (val Flo_format_pretty.with_colors false : Flo_format_pretty.FORMATTER)
+  in
+  let record =
+    Record.make_with_timestamp ~timestamp:test_timestamp
+      ~severity:Severity.Info ~message:"Test message"
+  in
+  let formatted = F.format record in
+  Alcotest.(check bool)
+    "uses compact label" true
+    (String.starts_with ~prefix:"2024-01-15 10:30:45.000 INF " formatted);
+  Alcotest.(check bool)
+    "does not use padded bracket label" false
+    (try
+       ignore (Str.search_forward (Str.regexp "\\[INFO") formatted 0);
+       true
+     with Not_found -> false)
+
 (* Test all severity levels have different colors *)
 let test_all_severity_levels () =
   let levels = [
@@ -285,12 +304,37 @@ let test_format_namespace_without_colors () =
     (try ignore (Str.search_forward (Str.regexp "\\[mylib\\.test\\]") formatted 0); true
      with Not_found -> false)
 
+let test_long_message_stays_single_line () =
+  let tail = "tail-marker-0123456789" in
+  let message = String.make 512 'x' ^ tail in
+  let record =
+    Record.make ~severity:Severity.Info ~message
+    |> Record.with_namespace "poster.linkedin.oauth"
+  in
+  let formatted = Flo_format_pretty.format record in
+  Alcotest.(check bool) "contains tail marker" true
+    (try
+       ignore (Str.search_forward (Str.regexp "tail-marker") formatted 0);
+       true
+     with Not_found -> false);
+  Alcotest.(check bool) "not truncated" true
+    (String.length formatted > String.length message);
+  Alcotest.(check int)
+    "all payload bytes remain" 512
+    (String.fold_left
+       (fun count char -> if Char.equal char 'x' then count + 1 else count)
+       0 formatted);
+  Alcotest.(check bool)
+    "formatter does not split record" false
+    (String.contains formatted '\n')
+
 let () =
   let open Alcotest in
   run "Flo_format_pretty" [
     "basic_formatting", [
       test_case "format with colors" `Quick test_format_with_colors;
       test_case "format without colors" `Quick test_format_without_colors;
+      test_case "compact severity label" `Quick test_compact_severity_label;
       test_case "all severity levels" `Quick test_all_severity_levels;
     ];
     "components", [
@@ -319,5 +363,7 @@ let () =
       test_case "format without namespace" `Quick test_format_without_namespace;
       test_case "namespace with colors" `Quick test_format_namespace_with_colors;
       test_case "namespace without colors" `Quick test_format_namespace_without_colors;
+      test_case "long message stays single line" `Quick
+        test_long_message_stays_single_line;
     ];
   ]

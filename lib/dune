@@ -2,4 +2,4 @@
  (name flo)
  (public_name flo)
  (wrapped false)
- (libraries eio eio.core yojson ptime ptime.clock.os unix))
+ (libraries eio eio.core logs mirage-crypto-rng.unix yojson ptime ptime.clock.os unix))

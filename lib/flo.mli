@@ -411,6 +411,15 @@ val set_level : Severity.t -> unit
 *)
 val get_level : unit -> Severity.t
 
+(** Install Flo as the reporter for the standard [Logs] library.
+
+    This lets libraries that emit through [Logs] share Flo's console formatter,
+    namespace filtering, and structured fields. [Logs] tags are copied into the
+    Flo record as string fields. The optional [level] controls only the [Logs]
+    pre-filter; Flo still applies its own global and namespace levels.
+*)
+val install_logs_reporter : ?level:Severity.t -> unit -> unit
+
 (** {1 Namespace Configuration} *)
 
 (** Set minimum log level for a specific namespace.
